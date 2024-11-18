@@ -6,6 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+builder.Services.AddSingleton<IRepository, Repository>();
+
 builder.Services.AddControllers();
 // Registrera Unit of Work i DI-container
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -22,6 +26,10 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 //}
+
+//migration of db, uncomment when ready
+MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, app.Logger);
+
 
 app.UseHttpsRedirection();
 
