@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using DbUp;
+﻿using DbUp;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 namespace WebShop.Repository;
 

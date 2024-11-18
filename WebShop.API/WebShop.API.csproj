@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Repository\WebShop.Repository.csproj" />
+    <ProjectReference Include="..\WebShop.Repository\WebShop.Repository.csproj" />
   </ItemGroup>
 
 </Project>
