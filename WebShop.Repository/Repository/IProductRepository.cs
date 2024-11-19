@@ -1,20 +1,33 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Dapper;
 using Repository.Models;
+using System.Data;
+using System.Transactions;
+using WebShop.Repository;
 
 namespace Repository.Repository;
 
 public interface IProductRepository : IRepository<Product>
 {
-     void UpdateStock(int productId, int quantity);
+     Task UpdateStockQuantity(int productId, int quantity);
 }
 public class ProductRepository : Repository<Product>, IProductRepository
 {
-    public ProductRepository(IConfiguration configuration) : base(configuration)
+    private readonly IDbConnection _connectionString;
+    private readonly IDbTransaction _transaction;
+
+    public ProductRepository(IDbConnection connectionString, IDbTransaction transaction) : base(connectionString, transaction)
     {
-        
+        _connectionString = connectionString;
+        _transaction = transaction;
     }
-    public void UpdateStock(int productId, int quantity)
+
+    public async Task UpdateStockQuantity(int productId, int quantity)
     {
-        throw new NotImplementedException();
+        var tableName = "Products";
+        using (var connection = _connectionString)
+        {
+            var sql = $"UPDATE {tableName} SET StockQuantity = StockQuantity - @Quantity WHERE Id = @ProductId";
+            await connection.ExecuteAsync(sql, new { ProductId = productId, Quantity = quantity }, _transaction);
+        }
     }
 }

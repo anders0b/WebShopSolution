@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Repository.Models;
 using WebShop.UnitOfWork;
 
 namespace WebShop.Controllers

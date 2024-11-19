@@ -1,1 +1,28 @@
-﻿
+﻿CREATE TABLE [dbo].[Products] (
+	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+	[Name] NVARCHAR(100) NOT NULL,
+	[Price] DECIMAL(18, 2) NOT NULL
+);
+CREATE TABLE [dbo].[Customers] (
+	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+	[FirstName] NVARCHAR(100) NOT NULL,
+	[LastName] NVARCHAR(100) NOT NULL,
+	[Address] NVARCHAR(100) NOT NULL,
+	[PostalCode] INT NOT NULL,
+	[City] NVARCHAR(100) NOT NULL,
+	[Email] NVARCHAR(100) NOT NULL,
+	[Phone] NVARCHAR(100) NOT NULL,
+);
+CREATE TABLE [dbo].[Orders] (
+	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+	[OrderDate] DATETIME NOT NULL,
+	[CustomerId] INT NOT NULL,
+	FOREIGN KEY (CustomerId) REFERENCES Customers(Id)
+);
+CREATE TABLE [dbo].[OrderItems] (
+	[OrderId] INT NOT NULL,
+	[ProductId] INT NOT NULL,
+	PRIMARY KEY ([OrderId], [ProductId]),
+	FOREIGN KEY (OrderId) REFERENCES Orders(Id),
+	FOREIGN KEY (ProductId) REFERENCES Products(Id)
+);

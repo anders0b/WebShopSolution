@@ -1,12 +1,13 @@
 using Repository.Repository;
 using WebShop.Notifications;
-using WebShop.UnitOfWork;
+using WebShop.Repository;
+using WebShop.Repository.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Not a valid connection");
 
 builder.Services.AddControllers();
 // Registrera Unit of Work i DI-container
@@ -26,7 +27,7 @@ app.UseSwaggerUI();
 //}
 
 //migration of db, uncomment when ready
-//MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, app.Logger);
+MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, app.Logger);
 
 
 app.UseHttpsRedirection();

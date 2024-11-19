@@ -1,4 +1,6 @@
-﻿namespace WebShop.Notifications
+﻿using Repository.Models;
+
+namespace WebShop.Notifications
 {
     // En konkret observatör som skickar e-postmeddelanden
     public class EmailNotification : INotificationObserver

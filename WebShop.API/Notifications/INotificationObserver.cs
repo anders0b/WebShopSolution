@@ -1,4 +1,6 @@
-﻿namespace WebShop.Notifications
+﻿using Repository.Models;
+
+namespace WebShop.Notifications
 {
     // Gränssnitt för notifieringsobservatörer enligt Observer Pattern
     public interface INotificationObserver
