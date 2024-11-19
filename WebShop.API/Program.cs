@@ -16,6 +16,9 @@ var databaseConnectionString = builder.Configuration.GetConnectionString("Defaul
 builder.Services.AddScoped<IDbConnection>(sp =>
 new SqlConnection(databaseConnectionString));
 
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Registrera Unit of Work i DI-container
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

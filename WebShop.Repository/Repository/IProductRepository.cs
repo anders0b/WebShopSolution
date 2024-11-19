@@ -15,10 +15,9 @@ public class ProductRepository : Repository<Product>, IProductRepository
     private readonly IDbConnection _connectionString;
     private readonly IDbTransaction _transaction;
 
-    public ProductRepository(IDbConnection connectionString, IDbTransaction transaction) : base(connectionString, transaction)
+    public ProductRepository(IDbConnection connectionString) : base(connectionString)
     {
         _connectionString = connectionString;
-        _transaction = transaction;
     }
 
     public async Task UpdateStockQuantity(int productId, int quantity)

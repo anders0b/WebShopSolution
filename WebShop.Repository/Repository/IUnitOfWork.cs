@@ -14,25 +14,20 @@ namespace WebShop.Repository.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly IDbConnection _connection;
-        private readonly IDbTransaction _transaction;
+        private IDbTransaction _transaction;
         public ICustomerRepository Customers{ get; }
         public IProductRepository Products { get; }
         public IOrderRepository Orders { get; }
-        private bool _disposed;
 
         //private readonly ProductSubject _productSubject;
 
         //Konstruktor används för tillfället av Observer pattern
-        public UnitOfWork(IDbConnection connection)
+        public UnitOfWork(IDbConnection connection, ICustomerRepository customerRepository, IProductRepository productRepository, IOrderRepository orderRepository)
         {
-            _connection = connection ?? throw new Exception("Connection is null");
-            _connection.Open();
-
-            _transaction = _connection.BeginTransaction();
-
-            Products = new ProductRepository(_connection, _transaction);
-            Orders = new OrderRepository(_connection, _transaction);
-            Customers = new CustomerRepository(_connection, _transaction);
+            _connection = connection;
+            Customers = customerRepository;
+            Products = productRepository;
+            Orders = orderRepository;
 
             //Products = null;
 
@@ -42,47 +37,36 @@ namespace WebShop.Repository.Repository
             // Registrera standardobservatörer
             //_productSubject.Attach(new EmailNotification());
         }
-
         //public void NotifyProductAdded(Product product)
         //{
         //    _productSubject.Notify(product);
         //}
         public void Dispose()
         {
-            dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void dispose(bool disposing)
-        {
-            if (!_disposed)
-            {
-                if (disposing)
-                {
-                    if (_transaction != null)
-                    {
-                        _transaction.Dispose();
-                    }
-                    if (_connection != null)
-                    {
-                        _connection.Dispose();
-                    }
-                }
-                _disposed = true;
-            }
+            _transaction?.Dispose();
+            _connection?.Dispose();
         }
 
         public async Task SaveChangesAsync()
         {
-            try
+            if(_connection.State != ConnectionState.Open)
             {
-                _transaction.Commit();
+                _connection.Open();
             }
-            catch
+            using (var transaction = _connection.BeginTransaction())
             {
-
-                _transaction.Rollback();
-                throw;
+                try
+                {
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                }
+                finally
+                {
+                    _connection.Close();
+                }
             }
         }
     }

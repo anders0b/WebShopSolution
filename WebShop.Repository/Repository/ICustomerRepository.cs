@@ -15,18 +15,16 @@ public interface ICustomerRepository : IRepository<Customer>
 public class CustomerRepository : Repository<Customer>, ICustomerRepository
 {
     private readonly IDbConnection _connectionString;
-    private readonly IDbTransaction _transaction;
     private string _tableName = "Customers";
-    public CustomerRepository(IDbConnection connectionString, IDbTransaction transaction) : base(connectionString, transaction)
+    public CustomerRepository(IDbConnection connectionString) : base(connectionString)
     {
         _connectionString = connectionString;
-        _transaction = transaction;
     }
     public Customer GetCustomerByEmail(string email)
     {
         using (var connection = _connectionString)
         {
-            return connection.QueryFirstOrDefault<Customer>($"SELECT * FROM {_tableName} WHERE Email = @Email", new { Email = email }, _transaction) ?? default!;
+            return connection.QueryFirstOrDefault<Customer>($"SELECT * FROM {_tableName} WHERE Email = @Email", new { Email = email }) ?? default!;
         }
     }
 
@@ -34,7 +32,7 @@ public class CustomerRepository : Repository<Customer>, ICustomerRepository
     {
         using (var connection = _connectionString)
         {
-            return connection.QueryFirstOrDefault<Customer>($"SELECT * FROM {_tableName} WHERE Phone = @Phone", new { Phone = phone }, _transaction) ?? default!;
+            return connection.QueryFirstOrDefault<Customer>($"SELECT * FROM {_tableName} WHERE Phone = @Phone", new { Phone = phone }) ?? default!;
         }
        
     }

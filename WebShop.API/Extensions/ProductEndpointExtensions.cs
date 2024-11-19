@@ -14,7 +14,7 @@ namespace WebShop.API.Extensions
                 if (product != null)
                 {
                     await productService.AddProduct(product);
-                    return Results.Ok();
+                    return Results.Ok($"Added product {product}");
                 }
                 return Results.Problem();
             });

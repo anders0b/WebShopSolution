@@ -12,42 +12,45 @@ public interface IRepository<T> where T : class
     Task<int> Add(T entity);
     Task Remove(T entity);
     Task Update(T entity);
+    void SetTransaction(IDbTransaction transaction);
 }
 public class Repository<T> : IRepository<T> where T : class
 {
     private readonly IDbConnection _connectionString;
-    private readonly IDbTransaction _transaction;
-    public Repository(IDbConnection connectionString, IDbTransaction transaction)
+    private IDbTransaction _transaction;
+    public Repository(IDbConnection connectionString)
     {
         _connectionString = connectionString;
+    }
+    public void SetTransaction(IDbTransaction transaction)
+    {
         _transaction = transaction;
     }
     public async Task<int> Add(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
-        using (var connection = _connectionString)
-        {
-            var properties = typeof(T).GetProperties()
-                .Where(p => !p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase));
 
-            var columnNames = string.Join(", ", properties.Select(p => p.Name));
-            var parametersName = string.Join(", ", properties.Select(p => $"@{p.Name}"));
+        var properties = typeof(T).GetProperties()
+            .Where(p => !p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase));
 
-            var parameterObject = properties.ToDictionary(
-                p => p.Name,
-                p => p.GetValue(entity));
+        var columnNames = string.Join(", ", properties.Select(p => p.Name));
+        var parametersName = string.Join(", ", properties.Select(p => $"@{p.Name}"));
 
-            var sql = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parametersName}); SELECT CAST(SCOPE_IDENTITY() as int);";
+        var parameterObject = properties.ToDictionary(
+            p => p.Name,
+            p => p.GetValue(entity));
 
-            return await connection.ExecuteScalarAsync<int>(sql, parameterObject, _transaction);
-        }
+        var sql = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parametersName}); SELECT CAST(SCOPE_IDENTITY() as int);";
+
+        return await _connectionString.ExecuteScalarAsync<int>(sql, parameterObject, _transaction);
     }
+
     public async Task<IEnumerable<T>> GetAll()
     {
         var tableName = $"{typeof(T).Name}s";
         using (var connection = _connectionString)
         {
-            return await connection.QueryAsync<T>($"SELECT * FROM {tableName}", _transaction);
+            return await connection.QueryAsync<T>($"SELECT * FROM {tableName}");
         }
     }
 
@@ -56,7 +59,7 @@ public class Repository<T> : IRepository<T> where T : class
         var tableName = $"{typeof(T).Name}s";
         using (var connection = _connectionString)
         {
-            return await connection.QueryFirstOrDefaultAsync<T>($"SELECT * FROM {tableName} WHERE Id = @Id", new { Id = id }, _transaction) ?? default!;
+            return await connection.QueryFirstOrDefaultAsync<T>($"SELECT * FROM {tableName} WHERE Id = @Id", new { Id = id }) ?? default!;
         }
     }
 
@@ -66,7 +69,7 @@ public class Repository<T> : IRepository<T> where T : class
         using (var connection = _connectionString)
         {
             var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
-            await connection.ExecuteAsync(sql, entity, _transaction);
+            await connection.ExecuteAsync(sql, entity);
         }
     }
 
@@ -80,7 +83,7 @@ public class Repository<T> : IRepository<T> where T : class
 
             var sql = $"UPDATE {tableName} SET {columnNames} WHERE Id = @Id";
 
-            await connection.ExecuteAsync(sql, entity, _transaction);
+            await connection.ExecuteAsync(sql, entity);
         }
     }
 }

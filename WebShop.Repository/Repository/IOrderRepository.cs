@@ -11,11 +11,9 @@ namespace WebShop.Repository.Repository
     public class OrderRepository : Repository<Order>, IOrderRepository
     {
         private readonly IDbConnection _connectionString;
-        private readonly IDbTransaction _transaction;
-        public OrderRepository(IDbConnection connectionString, IDbTransaction transaction) : base(connectionString, transaction)
+        public OrderRepository(IDbConnection connectionString) : base(connectionString)
         {
             _connectionString = connectionString;
-            _transaction = transaction;
         }
     }
 }
