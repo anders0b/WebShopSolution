@@ -5,20 +5,20 @@ namespace WebShop.Repository.Repository
 {
     public interface IUnitOfWork : IDisposable
     {
-        ICustomerRepository CustomerRepository { get; }
-        IProductRepository ProductRepository { get; }
-        IOrderRepository OrderRepository { get; }
-        Task<int> SaveChangesAsync();
+        ICustomerRepository Customers { get; }
+        IProductRepository Products { get; }
+        IOrderRepository Orders { get; }
+        Task SaveChangesAsync();
         //void NotifyProductAdded(Product product); // Notifierar observatörer om ny produkt
     }
     public class UnitOfWork : IUnitOfWork
     {
         private readonly IDbConnection _connection;
         private readonly IDbTransaction _transaction;
-        private readonly Dictionary<Type, object> _repositories;
-        public ICustomerRepository CustomerRepository { get; }
-        public IProductRepository ProductRepository { get; }
-        public IOrderRepository OrderRepository { get; }
+        public ICustomerRepository Customers{ get; }
+        public IProductRepository Products { get; }
+        public IOrderRepository Orders { get; }
+        private bool _disposed;
 
         //private readonly ProductSubject _productSubject;
 
@@ -30,11 +30,9 @@ namespace WebShop.Repository.Repository
 
             _transaction = _connection.BeginTransaction();
 
-            _repositories = new Dictionary<Type, object>();
-
-            ProductRepository = new ProductRepository(_connection, _transaction);
-            OrderRepository = new OrderRepository(_connection, _transaction);
-            CustomerRepository = new CustomerRepository(_connection, _transaction);
+            Products = new ProductRepository(_connection, _transaction);
+            Orders = new OrderRepository(_connection, _transaction);
+            Customers = new CustomerRepository(_connection, _transaction);
 
             //Products = null;
 
@@ -51,25 +49,42 @@ namespace WebShop.Repository.Repository
         //}
         public void Dispose()
         {
-            _transaction.Dispose();
-            _connection.Dispose();
+            dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        public async Task<int> SaveChangesAsync()
+        private void dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    if (_transaction != null)
+                    {
+                        _transaction.Dispose();
+                    }
+                    if (_connection != null)
+                    {
+                        _connection.Dispose();
+                    }
+                }
+                _disposed = true;
+            }
+        }
+
+        public async Task SaveChangesAsync()
         {
             try
             {
                 _transaction.Commit();
-                return 1;
             }
             catch
             {
+
                 _transaction.Rollback();
                 throw;
             }
         }
-
-
     }
 }
 

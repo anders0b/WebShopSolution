@@ -27,13 +27,19 @@ public class Repository<T> : IRepository<T> where T : class
         var tableName = $"{typeof(T).Name}s";
         using (var connection = _connectionString)
         {
-            var properties = typeof(T).GetProperties();
+            var properties = typeof(T).GetProperties()
+                .Where(p => !p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase));
+
             var columnNames = string.Join(", ", properties.Select(p => p.Name));
             var parametersName = string.Join(", ", properties.Select(p => $"@{p.Name}"));
 
-            var sql = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parametersName})";
+            var parameterObject = properties.ToDictionary(
+                p => p.Name,
+                p => p.GetValue(entity));
 
-            return await connection.ExecuteScalarAsync<int>(sql, entity, _transaction);
+            var sql = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parametersName}); SELECT CAST(SCOPE_IDENTITY() as int);";
+
+            return await connection.ExecuteScalarAsync<int>(sql, parameterObject, _transaction);
         }
     }
     public async Task<IEnumerable<T>> GetAll()

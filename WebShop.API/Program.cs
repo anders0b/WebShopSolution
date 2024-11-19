@@ -1,7 +1,11 @@
+using Microsoft.Data.SqlClient;
 using Repository.Repository;
+using System.Data;
+using WebShop.API.Extensions;
 using WebShop.Notifications;
 using WebShop.Repository;
 using WebShop.Repository.Repository;
+using WebShop.Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,15 +13,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Not a valid connection");
 
-builder.Services.AddControllers();
+builder.Services.AddScoped<IDbConnection>(sp =>
+new SqlConnection(databaseConnectionString));
+
+
 // Registrera Unit of Work i DI-container
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddTransient<INotificationObserver, EmailNotification>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -32,8 +41,8 @@ MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, a
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
 
-app.MapControllers();
+app.MapProductEndpoints();
+
 
 app.Run();

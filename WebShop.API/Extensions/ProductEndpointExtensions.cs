@@ -9,15 +9,6 @@ namespace WebShop.API.Extensions
         {
             var group = app.MapGroup("api/products");
 
-            group.MapGet("", async (IProductServices productService) =>
-            {
-                var products = await productService.GetAllProducts();
-                if (products == null)
-                {
-                    return new List<Product>();
-                }
-                return Results.Ok(products);
-            });
             group.MapPost("", async (IProductServices productService, Product product) =>
             {
                 if (product != null)
@@ -26,6 +17,11 @@ namespace WebShop.API.Extensions
                     return Results.Ok();
                 }
                 return Results.Problem();
+            });
+            group.MapGet("", async (IProductServices productService) =>
+            {
+                var products = await productService.GetAllProducts();
+                return Results.Ok(products);
             });
             return app;
         }
