@@ -8,7 +8,7 @@ public interface IRepository<T> where T : class
     Task<IEnumerable<T>> GetAll();
     Task<T> GetById(int id);
     Task<int> Add(T entity);
-    Task Remove(T entity);
+    Task Remove(int id);
     Task Update(T entity);
     //void SetTransaction(IDbTransaction transaction);
 }
@@ -21,10 +21,6 @@ public class Repository<T> : IRepository<T> where T : class
         _connectionString = connectionString;
         _transaction = transaction;
     }
-    //public void SetTransaction(IDbTransaction transaction)
-    //{
-    //    _transaction = transaction;
-    //}
     public async Task<int> Add(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
@@ -57,12 +53,12 @@ public class Repository<T> : IRepository<T> where T : class
         return await _connectionString.QueryFirstOrDefaultAsync<T>($"SELECT * FROM {tableName} WHERE Id = @Id", new { Id = id }, transaction: _transaction) ?? default!;
     }
 
-    public async Task Remove(T entity)
+    public async Task Remove(int id)
     {
         var tableName = $"{typeof(T).Name}s";
 
         var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
-        await _connectionString.ExecuteAsync(sql, entity, transaction: _transaction);
+        await _connectionString.ExecuteAsync(sql, id, transaction: _transaction);
 
     }
 

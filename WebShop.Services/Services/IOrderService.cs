@@ -6,13 +6,11 @@ namespace WebShop.Services.Services;
 public interface IOrderService
 {
     Task<IEnumerable<Order>> GetAllOrders();
+    Task AddProductsToOrder(int orderId, List<int> productIds);
     Task<Order> GetOrderById(int id);
-    Task AddOrder(Order order);
-    Task RemoveOrder(Order order);
+    Task RemoveOrder(int id);
     Task UpdateOrder(Order order);
     Task UpdateOrderStatus(int id, bool isShipped);
-    Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId);
-    Task<Customer> GetCustomerFromOrderId(int orderId);
 }
 public class OrderService : IOrderService
 {
@@ -22,13 +20,13 @@ public class OrderService : IOrderService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task AddOrder(Order order)
+    public async Task AddProductsToOrder(int orderId, List<int> productIds)
     {
-        if (order.Customer.Id == 0 || order.Products.Count == 0)
+        if (orderId == 0 || productIds.Count == 0)
         {
-            throw new Exception("Customer and Products cannot be null");
+            throw new Exception("Order Id and Products cannot be null");
         }
-        await _unitOfWork.Orders.Add(order);
+        await _unitOfWork.Orders.AddProductsToOrder(orderId, productIds);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -39,12 +37,17 @@ public class OrderService : IOrderService
 
     public async Task<Order> GetOrderById(int id)
     {
-        return await _unitOfWork.Orders.GetById(id);
+        var order = await _unitOfWork.Orders.GetById(id);
+        var orderProducts = await _unitOfWork.Products.GetAllProductsFromOrder(id);
+        var customer = await _unitOfWork.Customers.GetCustomerFromOrder(id);
+        order.Customer = customer;
+        order.Products = (List<Product>)orderProducts;
+        return order;
     }
 
-    public async Task RemoveOrder(Order order)
+    public async Task RemoveOrder(int id)
     {
-        await _unitOfWork.Orders.Remove(order);
+        await _unitOfWork.Orders.Remove(id);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -59,12 +62,5 @@ public class OrderService : IOrderService
         await _unitOfWork.Orders.UpdateOrderStatus(id, isShipped);
         await _unitOfWork.SaveChangesAsync();
     }
-    public async Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId)
-    {
-        return await _unitOfWork.Orders.GetAllProductsFromOrder(orderId);
-    }
-    public async Task<Customer> GetCustomerFromOrderId(int orderId)
-    {
-        return await _unitOfWork.Orders.GetCustomerFromOrderId(orderId);
-    }
+
 }

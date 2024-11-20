@@ -33,13 +33,12 @@ namespace WebShop.API.Extensions
                 }
                 return Results.Problem();
             });
-            group.MapDelete("{Id}", async (ICustomerService customerService, int Id) =>
+            group.MapDelete("{id}", async (ICustomerService customerService, int id) =>
             {
-                var customer = await customerService.GetCustomerById(Id);
-                if (customer is not null)
+                if (id != 0)
                 {
-                    await customerService.RemoveCustomer(customer);
-                    return Results.Ok($"Removed customer {customer}");
+                    await customerService.RemoveCustomer(id);
+                    return Results.Ok($"Removed customer {id}");
                 }
                 return Results.NotFound();
             });

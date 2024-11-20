@@ -8,10 +8,11 @@ public interface ICustomerService
     Task<Customer> GetCustomerById(int id);
     Task<IEnumerable<Customer>> GetAllCustomers();
     Task AddCustomer(Customer customer);
-    Task RemoveCustomer(Customer customer);
+    Task RemoveCustomer(int id);
     Task UpdateCustomer(Customer customer);
     Task UpdateCustomerEmail(int id, string email);
     Task UpdateCustomerPhone(int id, string phone);
+    Task<Customer> GetCustomerFromOrder(int orderId);
 }
 public class CustomerService : ICustomerService
 {
@@ -41,9 +42,14 @@ public class CustomerService : ICustomerService
         return await _unitOfWork.Customers.GetById(id);
     }
 
-    public async Task RemoveCustomer(Customer customer)
+    public async Task<Customer> GetCustomerFromOrder(int orderId)
     {
-        await _unitOfWork.Customers.Remove(customer);
+        return await _unitOfWork.Customers.GetCustomerFromOrder(orderId);
+    }
+
+    public async Task RemoveCustomer(int id)
+    {
+        await _unitOfWork.Customers.Remove(id);
         await _unitOfWork.SaveChangesAsync();
     }
 

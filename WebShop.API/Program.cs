@@ -31,6 +31,7 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddTransient<INotificationObserver, EmailNotification>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -61,6 +62,7 @@ app.UseHttpsRedirection();
 
 app.MapProductEndpoints();
 app.MapCustomerEndpoints();
+app.MapOrderEndpoints();
 
 
 app.Run();

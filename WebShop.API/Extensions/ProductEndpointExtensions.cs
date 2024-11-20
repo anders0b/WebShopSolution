@@ -33,11 +33,10 @@ namespace WebShop.API.Extensions
 
             group.MapDelete("{id}", async (IProductServices productService, int id) =>
             {
-                var product = await productService.GetProductById(id);
-                if (product is not null)
+                if (id != 0)
                 {
-                    await productService.RemoveProduct(product);
-                    return Results.Ok($"Removed product {product}");
+                    await productService.RemoveProduct(id);
+                    return Results.Ok($"Removed product {id}");
                 }
                 return Results.NotFound();
             });
@@ -55,6 +54,11 @@ namespace WebShop.API.Extensions
                     return Results.Ok($"Updated product {product}");
                 }
                 return Results.Problem();
+            });
+            group.MapGet("{orderId}/products", async (IProductServices productService, int orderId) =>
+            {
+                var products = await productService.GetAllProductsFromOrder(orderId);
+                return Results.Ok(products);
             });
             return app;
         }

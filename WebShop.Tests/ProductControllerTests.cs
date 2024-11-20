@@ -1,4 +1,3 @@
-using WebShop.Controllers;
 
 
 public class ProductControllerTests

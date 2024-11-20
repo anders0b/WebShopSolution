@@ -8,9 +8,10 @@ namespace WebShop.Services.Services
         Task<IEnumerable<Product>> GetAllProducts();
         Task<Product> GetProductById(int id);
         Task AddProduct(Product product);
-        Task RemoveProduct(Product product);
+        Task RemoveProduct(int id);
         Task UpdateProduct(Product product);
         Task UpdateStockQuantity(int id, int stock);
+        Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId);
     }
     public class ProductServices : IProductServices
     {
@@ -39,9 +40,9 @@ namespace WebShop.Services.Services
             return await _unitOfWork.Products.GetById(id);
         }
 
-        public async Task RemoveProduct(Product entity)
+        public async Task RemoveProduct(int id)
         {
-            await _unitOfWork.Products.Remove(entity);
+            await _unitOfWork.Products.Remove(id);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -54,6 +55,10 @@ namespace WebShop.Services.Services
         {
             await _unitOfWork.Products.UpdateStockQuantity(id, stock);
             await _unitOfWork.SaveChangesAsync();
+        }
+        public async Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId)
+        {
+            return await _unitOfWork.Products.GetAllProductsFromOrder(orderId);
         }
     }
 }
