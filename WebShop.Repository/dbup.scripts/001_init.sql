@@ -19,6 +19,7 @@ CREATE TABLE [dbo].[Orders] (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	[OrderDate] DATETIME NOT NULL,
 	[CustomerId] INT NOT NULL,
+	[IsShipped] BIT NOT NULL
 	FOREIGN KEY (CustomerId) REFERENCES Customers(Id)
 );
 CREATE TABLE [dbo].[OrderItems] (

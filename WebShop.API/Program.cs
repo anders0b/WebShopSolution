@@ -16,6 +16,13 @@ var databaseConnectionString = builder.Configuration.GetConnectionString("Defaul
 builder.Services.AddScoped<IDbConnection>(sp =>
 new SqlConnection(databaseConnectionString));
 
+builder.Services.AddScoped<IDbTransaction>(provider =>
+{
+    var connection = provider.GetRequiredService<IDbConnection>();
+    connection.Open();
+    return connection.BeginTransaction();
+});
+
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -23,10 +30,17 @@ builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 // Registrera Unit of Work i DI-container
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddTransient<INotificationObserver, EmailNotification>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.TagActionsBy(d =>
+    {
+        return new List<string>() { d.ActionDescriptor.DisplayName! };
+    });
+});
 
 var app = builder.Build();
 
@@ -46,6 +60,7 @@ app.UseHttpsRedirection();
 
 
 app.MapProductEndpoints();
+app.MapCustomerEndpoints();
 
 
 app.Run();

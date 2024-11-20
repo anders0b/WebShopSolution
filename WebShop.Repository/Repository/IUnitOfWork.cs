@@ -22,12 +22,13 @@ namespace WebShop.Repository.Repository
         //private readonly ProductSubject _productSubject;
 
         //Konstruktor används för tillfället av Observer pattern
-        public UnitOfWork(IDbConnection connection, ICustomerRepository customerRepository, IProductRepository productRepository, IOrderRepository orderRepository)
+        public UnitOfWork(IDbConnection connection, IDbTransaction transaction)
         {
             _connection = connection;
-            Customers = customerRepository;
-            Products = productRepository;
-            Orders = orderRepository;
+            _transaction = transaction;
+            Customers = new CustomerRepository(connection, transaction);
+            Products = new ProductRepository(connection, transaction);
+            Orders = new OrderRepository(connection, transaction);
 
             //Products = null;
 
@@ -53,20 +54,18 @@ namespace WebShop.Repository.Repository
             {
                 _connection.Open();
             }
-            using (var transaction = _connection.BeginTransaction())
+
+            try
             {
-                try
-                {
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                }
-                finally
-                {
-                    _connection.Close();
-                }
+                _transaction.Commit();
+            }
+            catch
+            {
+                _transaction.Rollback();
+            }
+            finally
+            {
+                _connection.Close();
             }
         }
     }

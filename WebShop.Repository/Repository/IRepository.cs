@@ -1,7 +1,5 @@
 ﻿using Dapper;
-using Microsoft.Data.SqlClient;
 using System.Data;
-using WebShop.Repository;
 
 namespace Repository.Repository;
 
@@ -12,20 +10,21 @@ public interface IRepository<T> where T : class
     Task<int> Add(T entity);
     Task Remove(T entity);
     Task Update(T entity);
-    void SetTransaction(IDbTransaction transaction);
+    //void SetTransaction(IDbTransaction transaction);
 }
 public class Repository<T> : IRepository<T> where T : class
 {
     private readonly IDbConnection _connectionString;
     private IDbTransaction _transaction;
-    public Repository(IDbConnection connectionString)
+    public Repository(IDbConnection connectionString, IDbTransaction transaction)
     {
         _connectionString = connectionString;
-    }
-    public void SetTransaction(IDbTransaction transaction)
-    {
         _transaction = transaction;
     }
+    //public void SetTransaction(IDbTransaction transaction)
+    //{
+    //    _transaction = transaction;
+    //}
     public async Task<int> Add(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
@@ -48,42 +47,35 @@ public class Repository<T> : IRepository<T> where T : class
     public async Task<IEnumerable<T>> GetAll()
     {
         var tableName = $"{typeof(T).Name}s";
-        using (var connection = _connectionString)
-        {
-            return await connection.QueryAsync<T>($"SELECT * FROM {tableName}");
-        }
+        return await _connectionString.QueryAsync<T>($"SELECT * FROM {tableName}", transaction: _transaction);
     }
 
     public async Task<T> GetById(int id)
     {
         var tableName = $"{typeof(T).Name}s";
-        using (var connection = _connectionString)
-        {
-            return await connection.QueryFirstOrDefaultAsync<T>($"SELECT * FROM {tableName} WHERE Id = @Id", new { Id = id }) ?? default!;
-        }
+ 
+        return await _connectionString.QueryFirstOrDefaultAsync<T>($"SELECT * FROM {tableName} WHERE Id = @Id", new { Id = id }, transaction: _transaction) ?? default!;
     }
 
     public async Task Remove(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
-        using (var connection = _connectionString)
-        {
-            var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
-            await connection.ExecuteAsync(sql, entity);
-        }
+
+        var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
+        await _connectionString.ExecuteAsync(sql, entity, transaction: _transaction);
+
     }
 
     public async Task Update(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
-        using (var connection = _connectionString)
-        {
-            var properties = typeof(T).GetProperties();
-            var columnNames = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
 
-            var sql = $"UPDATE {tableName} SET {columnNames} WHERE Id = @Id";
+        var properties = typeof(T).GetProperties();
+        var columnNames = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
 
-            await connection.ExecuteAsync(sql, entity);
-        }
+        var sql = $"UPDATE {tableName} SET {columnNames} WHERE Id = @Id";
+
+        await _connectionString.ExecuteAsync(sql, entity, transaction: _transaction);
+        
     }
 }

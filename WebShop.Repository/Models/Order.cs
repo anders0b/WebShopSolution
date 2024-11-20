@@ -12,4 +12,5 @@ public class Order
     public DateTime OrderDate { get; set; }
     public Customer Customer { get; set; } // Navigation property
     public List<Product> Products { get; set; }
+    public bool IsShipped { get; set; }
 }

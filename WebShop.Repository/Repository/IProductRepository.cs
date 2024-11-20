@@ -13,20 +13,19 @@ public interface IProductRepository : IRepository<Product>
 public class ProductRepository : Repository<Product>, IProductRepository
 {
     private readonly IDbConnection _connectionString;
-    private readonly IDbTransaction _transaction;
+    private IDbTransaction _transaction;
 
-    public ProductRepository(IDbConnection connectionString) : base(connectionString)
+    public ProductRepository(IDbConnection connectionString, IDbTransaction transaction) : base(connectionString, transaction)
     {
         _connectionString = connectionString;
+        _transaction = transaction;
     }
 
     public async Task UpdateStockQuantity(int productId, int quantity)
     {
         var tableName = "Products";
-        using (var connection = _connectionString)
-        {
-            var sql = $"UPDATE {tableName} SET StockQuantity = StockQuantity - @Quantity WHERE Id = @ProductId";
-            await connection.ExecuteAsync(sql, new { ProductId = productId, Quantity = quantity }, _transaction);
-        }
+
+        var sql = $"UPDATE {tableName} SET Stock = Stock - @Quantity WHERE Id = @ProductId";
+        await _connectionString.ExecuteAsync(sql, new { Quantity = quantity, ProductId = productId }, transaction: _transaction);
     }
 }
