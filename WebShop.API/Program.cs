@@ -12,6 +12,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Not a valid connection");
+var testDatabaseConnectionString = builder.Configuration.GetConnectionString("TestConnection") ?? throw new Exception("Not a valid connection");
+
 
 builder.Services.AddScoped<IDbConnection>(sp =>
 new SqlConnection(databaseConnectionString));
@@ -55,6 +57,10 @@ app.UseSwaggerUI();
 
 //migration of db, uncomment when ready
 MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, app.Logger);
+
+//Test-DB
+MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(testDatabaseConnectionString, app.Logger);
+
 
 
 app.UseHttpsRedirection();

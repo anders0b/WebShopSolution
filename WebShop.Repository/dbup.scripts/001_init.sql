@@ -1,25 +1,25 @@
 ﻿CREATE TABLE [dbo].[Products] (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	[Name] NVARCHAR(100) NOT NULL,
-	[Description] NVARCHAR(MAX) NOT NULL,
-	[Price] DECIMAL(18, 2) NOT NULL,
-	[Stock] INT NOT NULL
+	[Name] NVARCHAR(100) NULL,
+	[Description] NVARCHAR(MAX) NULL,
+	[Price] DECIMAL(18, 2) NULL,
+	[Stock] INT NULL
 );
 CREATE TABLE [dbo].[Customers] (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	[FirstName] NVARCHAR(100) NOT NULL,
-	[LastName] NVARCHAR(100) NOT NULL,
-	[Address] NVARCHAR(100) NOT NULL,
-	[PostalCode] INT NOT NULL,
-	[City] NVARCHAR(100) NOT NULL,
-	[Email] NVARCHAR(100) NOT NULL,
-	[Phone] NVARCHAR(100) NOT NULL,
+	[FirstName] NVARCHAR(100) NULL,
+	[LastName] NVARCHAR(100) NULL,
+	[Address] NVARCHAR(100) NULL,
+	[PostalCode] INT NULL,
+	[City] NVARCHAR(100) NULL,
+	[Email] NVARCHAR(100) NULL,
+	[Phone] NVARCHAR(100) NULL,
 );
 CREATE TABLE [dbo].[Orders] (
 	[Id] INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	[OrderDate] DATETIME NOT NULL,
-	[CustomerId] INT NOT NULL,
-	[IsShipped] BIT NOT NULL
+	[OrderDate] DATETIME NULL,
+	[CustomerId] INT NULL,
+	[IsShipped] BIT NULL
 	FOREIGN KEY (CustomerId) REFERENCES Customers(Id)
 );
 CREATE TABLE [dbo].[OrderItems] (

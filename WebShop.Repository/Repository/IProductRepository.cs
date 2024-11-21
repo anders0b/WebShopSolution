@@ -29,6 +29,7 @@ public class ProductRepository : Repository<Product>, IProductRepository
         var sql = $"UPDATE {tableName} SET Stock = Stock - @Quantity WHERE Id = @ProductId";
         await _connectionString.ExecuteAsync(sql, new { Quantity = quantity, ProductId = productId }, transaction: _transaction);
     }
+
     public async Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId)
     {
         var tableName = "OrderItems";

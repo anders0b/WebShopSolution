@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using System.Data;
+using System.Reflection;
 
 namespace Repository.Repository;
 
@@ -10,6 +11,7 @@ public interface IRepository<T> where T : class
     Task<int> Add(T entity);
     Task Remove(int id);
     Task Update(T entity);
+
     //void SetTransaction(IDbTransaction transaction);
 }
 public class Repository<T> : IRepository<T> where T : class
@@ -21,7 +23,7 @@ public class Repository<T> : IRepository<T> where T : class
         _connectionString = connectionString;
         _transaction = transaction;
     }
-    public async Task<int> Add(T entity)
+    public virtual async Task<int> Add(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
 
@@ -58,7 +60,7 @@ public class Repository<T> : IRepository<T> where T : class
         var tableName = $"{typeof(T).Name}s";
 
         var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
-        await _connectionString.ExecuteAsync(sql, id, transaction: _transaction);
+        await _connectionString.ExecuteAsync(sql, new {Id = id}, transaction: _transaction);
 
     }
 
@@ -66,12 +68,18 @@ public class Repository<T> : IRepository<T> where T : class
     {
         var tableName = $"{typeof(T).Name}s";
 
-        var properties = typeof(T).GetProperties();
+        var properties = typeof(T).GetProperties().Where(p => !p.Name.Equals("Id", StringComparison.OrdinalIgnoreCase)).ToArray();
         var columnNames = string.Join(", ", properties.Select(p => $"{p.Name} = @{p.Name}"));
+
+        var parameterObject = properties.ToDictionary(
+        p => p.Name,
+        p => p.GetValue(entity));
+
+        var idProperty = typeof(T).GetProperty("Id")!;
+        parameterObject["Id"] = idProperty.GetValue(entity);
 
         var sql = $"UPDATE {tableName} SET {columnNames} WHERE Id = @Id";
 
-        await _connectionString.ExecuteAsync(sql, entity, transaction: _transaction);
-        
+        await _connectionString.ExecuteAsync(sql, parameterObject, transaction: _transaction);
     }
 }
