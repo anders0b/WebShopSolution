@@ -8,6 +8,8 @@ using WebShop.Repository.Repository;
 
 namespace WebShop.Tests.Repository.Tests
 {
+
+    //Kanske skriva om och mocka allt istället för att använda en testdatabas
     public class RepositoryTests
     {
         private Product _testProduct = new Product { Description = "Test", Name = "Testprodukt", Price = 29.99, Stock = 50 };

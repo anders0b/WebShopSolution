@@ -13,6 +13,7 @@ public interface ICustomerRepository : IRepository<Customer>
     Task UpdateCustomerPhone(int customerId, string phone);
     Task<Customer> GetCustomerFromOrder(int orderId);
 }
+
 public class CustomerRepository : Repository<Customer>, ICustomerRepository
 {
     private readonly IDbConnection _connection;

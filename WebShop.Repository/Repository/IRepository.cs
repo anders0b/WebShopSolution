@@ -61,7 +61,6 @@ public class Repository<T> : IRepository<T> where T : class
 
         var sql = $"DELETE FROM {tableName} WHERE Id = @Id";
         await _connectionString.ExecuteAsync(sql, new {Id = id}, transaction: _transaction);
-
     }
 
     public async Task Update(T entity)
