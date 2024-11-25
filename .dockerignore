@@ -1,0 +1,15 @@
+# Ignore bin and obj folders
+bin/
+obj/
+
+# Ignore Git configuration files
+.git/
+
+# Ignore Visual Studio temporary files
+.vs/
+
+# Ignore Markdown files
+*.md
+
+# Ignore logs
+*.log
