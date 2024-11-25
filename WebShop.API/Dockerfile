@@ -16,4 +16,4 @@ COPY --from=build-env /App/out .
 # Expose port and define entry point
 EXPOSE 80
 ENV ASPNETCORE_URLS=http://+:80
-ENTRYPOINT ["dotnet", "WebShop.dll"]
+ENTRYPOINT ["dotnet", "WebShop.Api.dll"]
