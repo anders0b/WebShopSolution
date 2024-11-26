@@ -14,17 +14,16 @@ namespace WebShop.Tests.Observer.Tests
             var product = new Product { Id = 1, Name = "Test" };
 
             var fakeObserver = A.Fake<INotificationObserver>();
+            var fakeFactory = A.Fake<INotificationObserverFactory>();
+            A.CallTo(() => fakeFactory.CreateNotificationObserver()).Returns(fakeObserver);
 
             var productSubject = new ProductSubject();
-            productSubject.Attach(new ProductLoggerFactory(A.Fake<ILoggerFactory>()));
-
-            A.CallTo(() => fakeObserver.Update(product)).DoesNothing();
+            productSubject.Attach(fakeFactory);
 
             //Act
             productSubject.Notify(product);
 
             //Assert
-
             A.CallTo(() => fakeObserver.Update(product)).MustHaveHappenedOnceExactly();
         }
     }
