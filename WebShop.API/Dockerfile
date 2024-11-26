@@ -22,6 +22,9 @@ COPY ../ ./
 # Build and publish a release
 #RUN dotnet publish -c Release -o out
 
+RUN dotnet test WebShop.Tests/WebShop.Tests.csproj --no-build --verbosity normal
+
+
 RUN dotnet publish WebShop.API/WebShop.API.csproj -c Release -o out
 
 

@@ -41,7 +41,7 @@ namespace WebShop.API.Extensions
                 var customer = await customerService.GetCustomerById(id);
                 return customer is not null ? Results.Ok(customer) : Results.NotFound();
             }
-            return Results.Problem();
+            return Results.NotFound();
         }
 
         public static async Task<IResult> RemoveCustomer(ICustomerService customerService, int id)

@@ -33,12 +33,12 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> GetProductById(IProductServices productService, int id)
         {
-            var product = await productService.GetProductById(id);
-            if(product == null)
+            if(id != 0)
             {
-                return Results.NotFound();
+                var product = await productService.GetProductById(id);
+                return product is not null ? Results.Ok(product) : Results.NotFound();
             }
-            return Results.Ok(product);
+            return Results.NotFound();
         }
         public static async Task<IResult> RemoveProduct(IProductServices productService, int id)
         {

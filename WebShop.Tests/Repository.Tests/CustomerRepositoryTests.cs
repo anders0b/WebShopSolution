@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using FakeItEasy;
 using Repository.Models;
 using WebShop.Repository.Repository;
 
@@ -6,25 +6,23 @@ namespace WebShop.Tests.Repository.Tests
 {
     public class CustomerRepositoryTests
     {
-        private Customer _testCustomer = new Customer { Email = "test@test.se", Phone = "0700000" };
-
-        private SqlConnection _testConnection = new SqlConnection("Data Source = localhost; Initial Catalog = TEST_WebShopSQL; Integrated Security = True; Connect Timeout = 30; Encrypt=True;Trust Server Certificate=True;Application Intent = ReadWrite; Multi Subnet Failover=False");
-        private readonly SqlTransaction _transaction;
+        private Customer _testCustomer = new Customer { Id = 1, Email = "test@test.se", Phone = "0700000" };
 
         [Fact]
         public async Task CustomerRepository_GetCustomerByEmail_ShouldReturnCustomer()
         {
             //Arrange
-            var repositoryFake = new CustomerRepository(_testConnection, _transaction);
-
+            var repositoryFake = A.Fake<ICustomerRepository>();
+            var unitOfWorkFake = A.Fake<IUnitOfWork>();
             var email = "test@test.se";
 
-            var customerId = await repositoryFake.Add(_testCustomer);
+            A.CallTo(() => unitOfWorkFake.Customers.GetCustomerByEmail(email)).Returns(_testCustomer);
 
             //Act
-            var customer = await repositoryFake.GetCustomerByEmail(email);
+            var customer = await unitOfWorkFake.Customers.GetCustomerByEmail(email);
 
             //Assert
+            A.CallTo(() => unitOfWorkFake.Customers.GetCustomerByEmail(email)).MustHaveHappenedOnceExactly();
             Assert.NotNull(customer);
             Assert.Equal(email, customer.Email);
         }
@@ -32,16 +30,19 @@ namespace WebShop.Tests.Repository.Tests
         public async Task CustomerRepository_GetCustomerByPhone_ShouldReturnCustomer()
         {
             //Arrange
-            var repositoryFake = new CustomerRepository(_testConnection, _transaction);
+            var repositoryFake = A.Fake<ICustomerRepository>();
+            var unitOfWorkFake = A.Fake<IUnitOfWork>();
 
             var phone = "0700000";
 
-            var customerId = await repositoryFake.Add(_testCustomer);
+            A.CallTo(() => repositoryFake.GetCustomerByPhone(phone)).Returns(_testCustomer);
+            A.CallTo(() => unitOfWorkFake.Customers).Returns(repositoryFake);
 
             //Act
-            var customer = await repositoryFake.GetCustomerByPhone(phone);
+            var customer = await unitOfWorkFake.Customers.GetCustomerByPhone(phone);
 
             //Assert
+            A.CallTo(() => unitOfWorkFake.Customers.GetCustomerByPhone(phone)).MustHaveHappenedOnceExactly();
             Assert.NotNull(customer);
             Assert.Equal(phone, customer.Phone);
         }
@@ -49,54 +50,59 @@ namespace WebShop.Tests.Repository.Tests
         public async Task CustomerRepository_UpdateCustomerEmail_ShouldReturnNewEmail()
         {
             //Arrange
-            var repositoryFake = new CustomerRepository(_testConnection, _transaction);
+            var repositoryFake = A.Fake<ICustomerRepository>();
+            var unitOfWorkFake = A.Fake<IUnitOfWork>();
 
             var newEmail = "ny@test.se";
 
-            var customerId = await repositoryFake.Add(_testCustomer);
+            A.CallTo(() => repositoryFake.UpdateCustomerEmail(_testCustomer.Id, newEmail)).Invokes(() => _testCustomer.Email = newEmail);
+            A.CallTo(() => unitOfWorkFake.Customers).Returns(repositoryFake);
 
             //Act
-            await repositoryFake.UpdateCustomerEmail(customerId, newEmail);
+            await unitOfWorkFake.Customers.UpdateCustomerEmail(_testCustomer.Id, newEmail);
 
             //Assert
-            var customer = await repositoryFake.GetById(customerId);
-            Assert.Equal(newEmail, customer.Email);
+            A.CallTo(() => unitOfWorkFake.Customers.UpdateCustomerEmail(1, newEmail)).MustHaveHappenedOnceExactly();
+            Assert.Equal(newEmail, _testCustomer.Email);
         }
         [Fact]
         public async Task CustomerRepository_UpdateCustomerPhone_ShouldReturnNewPhone()
         {
             //Arrange
-            var repositoryFake = new CustomerRepository(_testConnection, _transaction);
+            var repositoryFake = A.Fake<ICustomerRepository>();
+            var unitOfWorkFake = A.Fake<IUnitOfWork>();
 
             var newPhone = "071111111";
 
-            var customerId = await repositoryFake.Add(_testCustomer);
+            A.CallTo(() => repositoryFake.UpdateCustomerPhone(_testCustomer.Id, newPhone)).Invokes(() => _testCustomer.Phone = newPhone);
+            A.CallTo(() => unitOfWorkFake.Customers).Returns(repositoryFake);
 
             //Act
-            await repositoryFake.UpdateCustomerPhone(customerId, newPhone);
+            await unitOfWorkFake.Customers.UpdateCustomerPhone(_testCustomer.Id, newPhone);
 
             //Assert
-            var customer = await repositoryFake.GetById(customerId);
-            Assert.Equal(newPhone, customer.Phone);
+            A.CallTo(() => unitOfWorkFake.Customers.UpdateCustomerPhone(_testCustomer.Id, newPhone)).MustHaveHappenedOnceExactly();
+            Assert.Equal(newPhone, _testCustomer.Phone);
         }
         [Fact]
         public async Task CustomerRepository_GetCustomerFromOrder_ShouldReturnCorrectCustomer()
         {
             //Arrange
-            var customerRepositoryFake = new CustomerRepository(_testConnection, _transaction);
-            var orderRepositoryFake = new OrderRepository(_testConnection, _transaction);
+            var customerRepositoryFake = A.Fake<ICustomerRepository>();
+            var unitOfWorkFake = A.Fake<IUnitOfWork>();
+            var orderId = 1;
+            var newOrder = new Order { Id = orderId, Customer = _testCustomer };
 
-            var orderId = await orderRepositoryFake.Add(new Order { OrderDate = DateTime.Now, IsShipped = false });
-            var customerId = await customerRepositoryFake.Add(_testCustomer);
+            A.CallTo(() => customerRepositoryFake.GetCustomerFromOrder(orderId)).Returns(_testCustomer);
+            A.CallTo(() => unitOfWorkFake.Customers).Returns(customerRepositoryFake);
 
             //Act
-            await customerRepositoryFake.GetCustomerFromOrder(orderId);
+            await unitOfWorkFake.Customers.GetCustomerFromOrder(orderId);
 
             //Assert
-            var customer = await customerRepositoryFake.GetById(customerId);
-            var order = await orderRepositoryFake.GetById(orderId);
-            order.Customer = customer;
-            Assert.Equal(customer.Id, order.Customer.Id);
+            A.CallTo(() => customerRepositoryFake.GetCustomerFromOrder(orderId)).MustHaveHappenedOnceExactly();
+            Assert.NotNull(_testCustomer);
+            Assert.Equal(_testCustomer.Id, newOrder.Customer.Id);
         }
     }
 }

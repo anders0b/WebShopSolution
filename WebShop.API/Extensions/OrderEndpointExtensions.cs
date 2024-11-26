@@ -23,12 +23,12 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> GetOrderById(IOrderService orderService, int id)
     {
-        var order = await orderService.GetOrderById(id);
-        if(order == null)
+        if(id != 0)
         {
-            return Results.NotFound();
+            var order = await orderService.GetOrderById(id);
+            return order is not null ? Results.Ok(order) : Results.NotFound();
         }
-        return Results.Ok(order);
+        return Results.NotFound();
     }
     public static async Task<IResult> AddProductsToOrder(IOrderService orderService, int orderId, List<int> productIds)
     {
@@ -37,7 +37,7 @@ public static class OrderEndpointExtensions
             await orderService.AddProductsToOrder(orderId, productIds);
             return Results.Ok($"Products added to order {orderId}");
         }
-        return Results.Problem();
+        return Results.NotFound();
     }
     public static async Task<IResult> RemoveOrder(IOrderService orderService, int id)
     {

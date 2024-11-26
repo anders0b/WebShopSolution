@@ -1,5 +1,7 @@
-﻿using Repository.Repository;
+﻿using Repository.Models;
+using Repository.Repository;
 using System.Data;
+using WebShop.Repository.Notifications;
 
 namespace WebShop.Repository.Repository;
 
@@ -9,7 +11,7 @@ public interface IUnitOfWork : IDisposable
     IProductRepository Products { get; }
     IOrderRepository Orders { get; }
     Task SaveChangesAsync();
-    //void NotifyProductAdded(Product product); // Notifierar observatörer om ny produkt
+    Task NotifyProductAdded(Product product); // Notifierar observatörer om ny produkt
 }
 public class UnitOfWork : IUnitOfWork
 {
@@ -19,7 +21,7 @@ public class UnitOfWork : IUnitOfWork
     public IProductRepository Products { get; }
     public IOrderRepository Orders { get; }
 
-    //private readonly ProductSubject _productSubject;
+    private readonly ProductSubject _productSubject;
 
     //Konstruktor används för tillfället av Observer pattern
     public UnitOfWork(IDbConnection connection, IDbTransaction transaction)
@@ -33,15 +35,16 @@ public class UnitOfWork : IUnitOfWork
         //Products = null;
 
         // Om inget ProductSubject injiceras, skapa ett nytt
-        //_productSubject = productSubject ?? new ProductSubject();
+        _productSubject = new ProductSubject();
 
         // Registrera standardobservatörer
-        //_productSubject.Attach(new EmailNotification());
+        _productSubject.Attach(new EmailNotification());
     }
-    //public void NotifyProductAdded(Product product)
-    //{
-    //    _productSubject.Notify(product);
-    //}
+    public async Task NotifyProductAdded(Product product)
+    {
+        await _productSubject.Notify(product);
+    }
+
     public void Dispose()
     {
         _transaction?.Dispose();

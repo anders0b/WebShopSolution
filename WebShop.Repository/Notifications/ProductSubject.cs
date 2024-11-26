@@ -1,6 +1,6 @@
 ﻿using Repository.Models;
 
-namespace WebShop.Notifications
+namespace WebShop.Repository.Notifications
 {
     // Subject som håller reda på observatörer och notifierar dem
     public class ProductSubject
@@ -8,25 +8,28 @@ namespace WebShop.Notifications
         // Lista över registrerade observatörer
         private readonly List<INotificationObserver> _observers = new List<INotificationObserver>();
 
-        public void Attach(INotificationObserver observer)
+        public Task Attach(INotificationObserver observer)
         {
             // Lägg till en observatör
             _observers.Add(observer);
+            return Task.CompletedTask;
         }
 
-        public void Detach(INotificationObserver observer)
+        public Task Detach(INotificationObserver observer)
         {
             // Ta bort en observatör
             _observers.Remove(observer);
+            return Task.CompletedTask;
         }
 
-        public void Notify(Product product)
+        public Task Notify(Product product)
         {
             // Notifiera alla observatörer om en ny produkt
             foreach (var observer in _observers)
             {
                 observer.Update(product);
             }
+            return Task.CompletedTask;
         }
     }
 }

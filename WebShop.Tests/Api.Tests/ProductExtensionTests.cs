@@ -170,14 +170,12 @@ public class ProductExtensionTests
         var fakeProductService = A.Fake<IProductServices>();
         int id = 0;
 
-        A.CallTo(() => fakeProductService.GetProductById(id)).Returns(Task.FromResult<Product>(null!));
-
         //Act
         var result = await ProductEndpointExtensions.GetProductById(fakeProductService, id);
 
         //Assert
         Assert.IsType<NotFound>(result);
-        A.CallTo(() => fakeProductService.GetProductById(id)).MustHaveHappenedOnceExactly();
+        A.CallTo(() => fakeProductService.GetProductById(id)).MustNotHaveHappened();
     }
     [Fact]
     public async Task GetAllProductsFromOrder_ReturnsOk_ShouldReturnList()

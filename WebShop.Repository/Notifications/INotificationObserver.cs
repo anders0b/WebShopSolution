@@ -1,10 +1,10 @@
 ﻿using Repository.Models;
 
-namespace WebShop.Notifications
+namespace WebShop.Repository.Notifications
 {
     // Gränssnitt för notifieringsobservatörer enligt Observer Pattern
     public interface INotificationObserver
     {
-        void Update(Product product); // Metod som kallas när en ny produkt läggs till
+        Task Update(Product product); // Metod som kallas när en ny produkt läggs till
     }
 }

@@ -2,8 +2,8 @@ using Microsoft.Data.SqlClient;
 using Repository.Repository;
 using System.Data;
 using WebShop.API.Extensions;
-using WebShop.Notifications;
 using WebShop.Repository;
+using WebShop.Repository.Notifications;
 using WebShop.Repository.Repository;
 using WebShop.Services.Services;
 
@@ -12,7 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 var databaseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new Exception("Not a valid connection");
-var testDatabaseConnectionString = builder.Configuration.GetConnectionString("TestConnection") ?? throw new Exception("Not a valid connection");
 
 
 builder.Services.AddScoped<IDbConnection>(sp =>
@@ -30,6 +29,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Registrera Unit of Work i DI-container
+builder.Services.AddScoped<ProductSubject>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
@@ -57,10 +57,6 @@ app.UseSwaggerUI();
 
 //migration of db, uncomment when ready
 MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(databaseConnectionString, app.Logger);
-
-//Test-DB
-MigrationHelper.EnsureDatabaseIsAvailableAndUpToDate(testDatabaseConnectionString, app.Logger);
-
 
 
 app.UseHttpsRedirection();

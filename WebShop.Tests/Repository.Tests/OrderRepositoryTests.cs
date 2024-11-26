@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using FakeItEasy;
+using Microsoft.Data.SqlClient;
 using Repository.Models;
 using WebShop.Repository.Repository;
 
@@ -6,58 +7,56 @@ namespace WebShop.Tests.Repository.Tests;
 
 public class OrderRepositoryTests
 {
-    private Order _testOrder = new Order { OrderDate = DateTime.Now, IsShipped = false };
-    private Customer _testCustomer = new Customer();
-
-    private SqlConnection _testConnection = new SqlConnection("Data Source = localhost; Initial Catalog = TEST_WebShopSQL; Integrated Security = True; Connect Timeout = 30; Encrypt=True;Trust Server Certificate=True;Application Intent = ReadWrite; Multi Subnet Failover=False");
-    private readonly SqlTransaction _transaction;
+    private Order _testOrder = new Order { Id = 1, OrderDate = DateTime.Now, IsShipped = false };
+    private Customer _testCustomer = new Customer { Id = 1 };
 
     [Fact]
     public async Task OrderRepository_AddOverride_ShouldReturnOrderId()
     {
         //Arrange
-        var repositoryFake = new OrderRepository(_testConnection, _transaction);
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
+
+        A.CallTo(() => unitOfWorkFake.Orders.Add(_testOrder)).Returns(1);
 
         //Act
-        var id = await repositoryFake.Add(_testOrder);
-        _testOrder.Id = id;
+        var id = await unitOfWorkFake.Orders.Add(_testOrder);
 
         //Assert
-        Assert.NotEqual(0, id);
+        Assert.Equal(_testOrder.Id, id);
     }
     [Fact]
     public async Task OrderRepository_AddCustomerToOrder_ShouldReturnCorrectCustomerId()
     {
         //Arrange
-        var customerRepositoryFake = new CustomerRepository(_testConnection, _transaction);
-        var orderRepositoryFake = new OrderRepository(_testConnection, _transaction);
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
 
-        var orderId = await orderRepositoryFake.Add(new Order { OrderDate = DateTime.Now, IsShipped = false });
-        var customerId = await customerRepositoryFake.Add(_testCustomer);
+        A.CallTo(() => repositoryFake.AddCustomerToOrder(_testOrder.Id, _testCustomer.Id));
+        A.CallTo(() => unitOfWorkFake.Orders).Returns(repositoryFake);
 
         //Act
-        await orderRepositoryFake.AddCustomerToOrder(orderId, customerId);
-
+        await unitOfWorkFake.Orders.AddCustomerToOrder(_testOrder.Id, _testCustomer.Id);
 
         //Assert
-        var customer = await customerRepositoryFake.GetById(customerId);
-        var order = await orderRepositoryFake.GetById(orderId);
-        order.Customer = customer;
-        Assert.Equal(customer.Id, order.Customer.Id);
+        A.CallTo(() => repositoryFake.AddCustomerToOrder(_testOrder.Id, _testCustomer.Id)).MustHaveHappenedOnceExactly();
     }
     [Fact]
     public async Task OrderRepository_UpdateOrderStatus_ShouldReturnTrue()
     {
         //Arrange
-        var repositoryFake = new OrderRepository(_testConnection, _transaction);
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
+        var status = true;
 
-        var id = await repositoryFake.Add(_testOrder);
+        A.CallTo(() => repositoryFake.UpdateOrderStatus(_testOrder.Id, status)).Invokes(() => _testOrder.IsShipped = true);
+        A.CallTo(() => unitOfWorkFake.Orders).Returns(repositoryFake);
 
         //Act
-        await repositoryFake.UpdateOrderStatus(id, true);
-        var order = await repositoryFake.GetById(id);
+        await unitOfWorkFake.Orders.UpdateOrderStatus(_testOrder.Id, status);
 
         //Assert
-        Assert.True(order.IsShipped);
+        A.CallTo(() => repositoryFake.UpdateOrderStatus(_testOrder.Id, status)).MustHaveHappenedOnceExactly();
+        Assert.True(_testOrder.IsShipped);
     }
 }
