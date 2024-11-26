@@ -26,10 +26,10 @@ namespace WebShop.Services.Services
             _productSubject = productSubject;
             _loggerFactory = loggerFactory;
         }
-        public async Task AddProduct(Product product)
+        public async Task AddProduct(Product product) //implementation av factory- och observer pattern
         {
-            await _productSubject.Attach(new EmailNotification());
-            await _productSubject.Attach(new ProductLogger(_loggerFactory));
+            await _productSubject.Attach(new EmailNotificationFactory());
+            await _productSubject.Attach(new ProductLoggerFactory(_loggerFactory));
 
             if (product.Price < 0)
             {

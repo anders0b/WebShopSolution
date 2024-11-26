@@ -32,13 +32,11 @@ public class UnitOfWork : IUnitOfWork
         Products = new ProductRepository(connection, transaction);
         Orders = new OrderRepository(connection, transaction);
 
-        //Products = null;
-
         // Om inget ProductSubject injiceras, skapa ett nytt
         _productSubject = new ProductSubject();
 
         // Registrera standardobservatörer
-        _productSubject.Attach(new EmailNotification());
+        _productSubject.Attach(new EmailNotificationFactory());
     }
     public async Task NotifyProductAdded(Product product)
     {

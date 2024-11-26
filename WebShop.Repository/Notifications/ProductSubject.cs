@@ -8,9 +8,10 @@ namespace WebShop.Repository.Notifications
         // Lista över registrerade observatörer
         private readonly List<INotificationObserver> _observers = new List<INotificationObserver>();
 
-        public Task Attach(INotificationObserver observer)
+        public Task Attach(INotificationObserverFactory factory)
         {
             // Lägg till en observatör
+            var observer = factory.CreateNotificationObserver();
             _observers.Add(observer);
             return Task.CompletedTask;
         }
