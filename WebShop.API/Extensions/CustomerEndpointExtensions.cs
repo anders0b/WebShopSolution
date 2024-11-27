@@ -8,13 +8,13 @@ namespace WebShop.API.Extensions
         public static IEndpointRouteBuilder MapCustomerEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("api/customers").WithDisplayName("Customer Management");
-            group.MapPost("", AddCustomer);
-            group.MapGet("", GetAllCustomers);
-            group.MapGet("{id}", GetCustomerById);
-            group.MapDelete("{id}", RemoveCustomer);
-            group.MapPut("", UpdateCustomer);
-            group.MapPatch("update-email", UpdateCustomerEmail);
-            group.MapPatch("update-phone", UpdateCustomerPhone);
+            group.MapPost("", AddCustomer).WithSummary("Add Customer");
+            group.MapGet("", GetAllCustomers).WithSummary("Get all customers");
+            group.MapGet("{id}", GetCustomerById).WithSummary("Get customer by id");
+            group.MapDelete("{id}", RemoveCustomer).WithSummary("Remove customer");
+            group.MapPut("", UpdateCustomer).WithSummary("Update customer");
+            group.MapPatch("update-email", UpdateCustomerEmail).WithSummary("Update customer email");
+            group.MapPatch("update-phone", UpdateCustomerPhone).WithSummary("Update customer phone");
             return app;
 
         }

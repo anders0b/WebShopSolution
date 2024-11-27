@@ -1,7 +1,7 @@
 using FakeItEasy;
-using Microsoft.Extensions.Logging;
 using Repository.Models;
 using WebShop.Repository.Notifications;
+using WebShop.Repository.Notifications.Factory;
 
 namespace WebShop.Tests.Observer.Tests
 {
@@ -17,7 +17,7 @@ namespace WebShop.Tests.Observer.Tests
             var fakeFactory = A.Fake<INotificationObserverFactory>();
             A.CallTo(() => fakeFactory.CreateNotificationObserver()).Returns(fakeObserver);
 
-            var productSubject = new ProductSubject();
+            var productSubject = new EntitySubject<Product>();
             productSubject.Attach(fakeFactory);
 
             //Act
@@ -25,6 +25,44 @@ namespace WebShop.Tests.Observer.Tests
 
             //Assert
             A.CallTo(() => fakeObserver.Update(product)).MustHaveHappenedOnceExactly();
+        }
+        [Fact]
+        public void NotifyOrderAdded_CallsObserverUpdate_WithCorrectOrder()
+        {
+            //Arrange
+            var order = new Order { Id = 1 };
+
+            var fakeObserver = A.Fake<INotificationObserver>();
+            var fakeFactory = A.Fake<INotificationObserverFactory>();
+            A.CallTo(() => fakeFactory.CreateNotificationObserver()).Returns(fakeObserver);
+
+            var orderSubject = new EntitySubject<Order>();
+            orderSubject.Attach(fakeFactory);
+
+            //Act
+            orderSubject.Notify(order);
+
+            //Assert
+            A.CallTo(() => fakeObserver.Update(order)).MustHaveHappenedOnceExactly();
+        }
+        [Fact]
+        public void NotifyCustomerAdded_CallsObserverUpdate_WithCorrectCustomer()
+        {
+            //Arrange
+            var customer = new Customer { Id = 1 };
+
+            var fakeObserver = A.Fake<INotificationObserver>();
+            var fakeFactory = A.Fake<INotificationObserverFactory>();
+            A.CallTo(() => fakeFactory.CreateNotificationObserver()).Returns(fakeObserver);
+
+            var customerSubject = new EntitySubject<Customer>();
+            customerSubject.Attach(fakeFactory);
+
+            //Act
+            customerSubject.Notify(customer);
+
+            //Assert
+            A.CallTo(() => fakeObserver.Update(customer)).MustHaveHappenedOnceExactly();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿
-namespace WebShop.Repository.Notifications;
+﻿namespace WebShop.Repository.Notifications.Factory;
 
 //Factory Method Pattern - EmailNotificationFactory implementing INotificationObserverFactory
 

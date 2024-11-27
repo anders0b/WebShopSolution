@@ -1,4 +1,6 @@
-﻿using Repository.Models;
+﻿using Microsoft.Extensions.Logging;
+using Repository.Models;
+using WebShop.Repository.Notifications.Factory;
 using WebShop.Repository.Repository;
 
 namespace WebShop.Services.Services;
@@ -17,19 +19,25 @@ public interface ICustomerService
 public class CustomerService : ICustomerService
 {
     private readonly IUnitOfWork _unitOfWork;
-    public CustomerService(IUnitOfWork unitOfWork)
+    private readonly ILoggerFactory _loggerFactory;
+    public CustomerService(IUnitOfWork unitOfWork, ILoggerFactory loggerfactory)
     {
         _unitOfWork = unitOfWork;
+        _loggerFactory = loggerfactory;
     }
 
     public async Task AddCustomer(Customer customer)
     {
-        if(customer.Email == null || customer.Phone == null)
+        await _unitOfWork.AttachObserver(new EmailNotificationFactory());
+        await _unitOfWork.AttachObserver(new SMSNotificationFactory());
+        await _unitOfWork.AttachObserver(new LoggerFactory(_loggerFactory));
+        if (customer.Email == null || customer.Phone == null)
         {
             throw new Exception("Email and Phone cannot be null");
         }
         await _unitOfWork.Customers.Add(customer);
         await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.NotifyCustomerAdded(customer);
     }
 
     public async Task<IEnumerable<Customer>> GetAllCustomers()

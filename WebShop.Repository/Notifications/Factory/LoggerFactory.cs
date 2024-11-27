@@ -1,19 +1,19 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace WebShop.Repository.Notifications;
+namespace WebShop.Repository.Notifications.Factory;
 
 //Factory Method Pattern - Implementing INotificationObserver
 
-public class ProductLoggerFactory : INotificationObserverFactory
+public class LoggerFactory : INotificationObserverFactory
 {
     private readonly ILoggerFactory _logger;
-    public ProductLoggerFactory(ILoggerFactory loggerFactory)
+    public LoggerFactory(ILoggerFactory loggerFactory)
     {
         _logger = loggerFactory;
     }
 
     public INotificationObserver CreateNotificationObserver()
     {
-        return new ProductLogger(_logger);
+        return new Logger(_logger);
     }
 }

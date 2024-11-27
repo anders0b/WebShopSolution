@@ -1,4 +1,4 @@
-﻿namespace WebShop.Repository.Notifications;
+﻿namespace WebShop.Repository.Notifications.Factory;
 
 public interface INotificationObserverFactory
 {

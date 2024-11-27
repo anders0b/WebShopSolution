@@ -8,13 +8,23 @@ public static class OrderEndpointExtensions
     public static IEndpointRouteBuilder MapOrderEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("api/orders").WithDisplayName("Order Management");
-        group.MapGet("", GetAllOrders);
-        group.MapGet("{id}", GetOrderById);
-        group.MapPost("", AddProductsToOrder);
-        group.MapDelete("{Id}", RemoveOrder);
-        group.MapPut("", UpdateOrder);
-        group.MapPatch("{id}/{isShipped}", UpdateOrderStatus);
+        group.MapPost("", CreateOrder).WithSummary("Create order");
+        group.MapGet("", GetAllOrders).WithSummary("Get all orders");
+        group.MapGet("{id}", GetOrderById).WithSummary("Get order by id");
+        group.MapPost("{orderId}", AddProductsToOrder).WithSummary("Add products to order");
+        group.MapDelete("{Id}", RemoveOrder).WithSummary("Remove order");
+        group.MapPut("", UpdateOrder).WithSummary("Update order");
+        group.MapPatch("{id}/{isShipped}", UpdateOrderStatus).WithSummary("Update shipping status");
         return app;
+    }
+    public static async Task<IResult> CreateOrder(IOrderService orderService, Order order)
+    {
+        if (order != null)
+        {
+            await orderService.CreateOrder(order);
+            return Results.Ok($"Order {order.Id} created");
+        }
+        return Results.NotFound();
     }
     public static async Task<IResult> GetAllOrders(IOrderService orderService)
     {

@@ -8,13 +8,13 @@ namespace WebShop.API.Extensions
         public static IEndpointRouteBuilder MapProductEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("api/products").WithDisplayName("Product Management");
-            group.MapPost("", AddProduct);
-            group.MapGet("", GetAllProducts);
-            group.MapGet("{id}", GetProductById);
-            group.MapDelete("{id}", RemoveProduct);
-            group.MapPatch("update-stock", UpdateStockQuantity);
-            group.MapPut("", UpdateProduct);
-            group.MapGet("{orderId}/products", GetAllProductsFromOrder);
+            group.MapPost("", AddProduct).WithSummary("Add product");
+            group.MapGet("", GetAllProducts).WithSummary("Get all products");
+            group.MapGet("{id}", GetProductById).WithSummary("Get product by id");
+            group.MapDelete("{id}", RemoveProduct).WithSummary("Remove product");
+            group.MapPatch("update-stock", UpdateStockQuantity).WithSummary("Update product stock quantity");
+            group.MapPut("", UpdateProduct).WithSummary("Update product");
+            group.MapGet("{orderId}/products", GetAllProductsFromOrder).WithSummary("Get all products from order id");
             return app;
         }
         public static async Task<IResult> AddProduct(IProductServices productService, Product product)

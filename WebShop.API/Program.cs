@@ -29,7 +29,7 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 
 // Registrera Unit of Work i DI-container
-builder.Services.AddScoped<ProductSubject>();
+builder.Services.AddScoped(typeof(EntitySubject<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IProductServices, ProductServices>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();

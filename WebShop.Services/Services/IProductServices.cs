@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Repository.Models;
-using WebShop.Repository.Notifications;
+using WebShop.Repository.Notifications.Factory;
 using WebShop.Repository.Repository;
 
 namespace WebShop.Services.Services
@@ -18,18 +18,16 @@ namespace WebShop.Services.Services
     public class ProductServices : IProductServices
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly ProductSubject _productSubject;
         private readonly ILoggerFactory _loggerFactory;
-        public ProductServices(IUnitOfWork unitOfWork, ProductSubject productSubject, ILoggerFactory loggerFactory)
+        public ProductServices(IUnitOfWork unitOfWork, ILoggerFactory loggerFactory)
         {
             _unitOfWork = unitOfWork;
-            _productSubject = productSubject;
             _loggerFactory = loggerFactory;
         }
         public async Task AddProduct(Product product) //implementation av factory- och observer pattern
         {
-            await _productSubject.Attach(new EmailNotificationFactory());
-            await _productSubject.Attach(new ProductLoggerFactory(_loggerFactory));
+            await _unitOfWork.AttachObserver(new EmailNotificationFactory());
+            await _unitOfWork.AttachObserver(new LoggerFactory(_loggerFactory));
 
             if (product.Price < 0)
             {

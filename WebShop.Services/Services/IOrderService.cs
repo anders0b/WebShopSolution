@@ -1,10 +1,13 @@
-﻿using Repository.Models;
+﻿using Microsoft.Extensions.Logging;
+using Repository.Models;
+using WebShop.Repository.Notifications.Factory;
 using WebShop.Repository.Repository;
 
 namespace WebShop.Services.Services;
 
 public interface IOrderService
 {
+    Task CreateOrder(Order order);
     Task<IEnumerable<Order>> GetAllOrders();
     Task AddProductsToOrder(int orderId, List<int> productIds);
     Task<Order> GetOrderById(int id);
@@ -15,9 +18,11 @@ public interface IOrderService
 public class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
-    public OrderService(IUnitOfWork unitOfWork)
+    private readonly ILoggerFactory _loggerFactory;
+    public OrderService(IUnitOfWork unitOfWork, ILoggerFactory loggerfactory)
     {
         _unitOfWork = unitOfWork;
+        _loggerFactory = loggerfactory;
     }
 
     public async Task AddProductsToOrder(int orderId, List<int> productIds)
@@ -28,6 +33,18 @@ public class OrderService : IOrderService
         }
         await _unitOfWork.Orders.AddProductsToOrder(orderId, productIds);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateOrder(Order order)
+    {
+        await _unitOfWork.AttachObserver(new EmailNotificationFactory());
+        await _unitOfWork.AttachObserver(new LoggerFactory(_loggerFactory));
+        if (order != null)
+        {
+            await _unitOfWork.Orders.Add(order);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.NotifyOrderAdded(order);
+        }
     }
 
     public async Task<IEnumerable<Order>> GetAllOrders()

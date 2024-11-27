@@ -1,9 +1,9 @@
-﻿using Repository.Models;
+﻿using WebShop.Repository.Notifications.Factory;
 
 namespace WebShop.Repository.Notifications
 {
     // Subject som håller reda på observatörer och notifierar dem
-    public class ProductSubject
+    public class EntitySubject<T>
     {
         // Lista över registrerade observatörer
         private readonly List<INotificationObserver> _observers = new List<INotificationObserver>();
@@ -23,12 +23,12 @@ namespace WebShop.Repository.Notifications
             return Task.CompletedTask;
         }
 
-        public Task Notify(Product product)
+        public Task Notify(T entity)
         {
             // Notifiera alla observatörer om en ny produkt
             foreach (var observer in _observers)
             {
-                observer.Update(product);
+                observer.Update(entity);
             }
             return Task.CompletedTask;
         }

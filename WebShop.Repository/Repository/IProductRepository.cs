@@ -1,8 +1,6 @@
 ﻿using Dapper;
 using Repository.Models;
 using System.Data;
-using System.Transactions;
-using WebShop.Repository;
 
 namespace Repository.Repository;
 

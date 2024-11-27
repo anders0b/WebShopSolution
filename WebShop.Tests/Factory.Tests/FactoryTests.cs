@@ -1,6 +1,6 @@
-﻿
-using FakeItEasy;
+﻿using FakeItEasy;
 using WebShop.Repository.Notifications;
+using WebShop.Repository.Notifications.Factory;
 
 namespace WebShop.Tests.Factory.Tests;
 

@@ -2,7 +2,6 @@
 using Repository.Models;
 using Repository.Repository;
 using System.Data;
-using System.Data.Common;
 
 namespace WebShop.Repository.Repository;
 

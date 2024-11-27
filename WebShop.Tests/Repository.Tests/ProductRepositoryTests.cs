@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using Microsoft.Data.SqlClient;
 using Repository.Models;
 using Repository.Repository;
 using WebShop.Repository.Repository;

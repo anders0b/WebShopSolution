@@ -2,6 +2,7 @@
 using Repository.Repository;
 using System.Data;
 using WebShop.Repository.Notifications;
+using WebShop.Repository.Notifications.Factory;
 
 namespace WebShop.Repository.Repository;
 
@@ -11,7 +12,11 @@ public interface IUnitOfWork : IDisposable
     IProductRepository Products { get; }
     IOrderRepository Orders { get; }
     Task SaveChangesAsync();
-    Task NotifyProductAdded(Product product); // Notifierar observatörer om ny produkt
+    Task AttachObserver(INotificationObserverFactory factory);
+    Task DetachObserver(INotificationObserver observer);
+    Task NotifyProductAdded(Product product);
+    Task NotifyCustomerAdded(Customer customer);
+    Task NotifyOrderAdded(Order order);
 }
 public class UnitOfWork : IUnitOfWork
 {
@@ -21,7 +26,7 @@ public class UnitOfWork : IUnitOfWork
     public IProductRepository Products { get; }
     public IOrderRepository Orders { get; }
 
-    private readonly ProductSubject _productSubject;
+    private readonly EntitySubject<object> _entitySubject;
 
     //Konstruktor används för tillfället av Observer pattern
     public UnitOfWork(IDbConnection connection, IDbTransaction transaction)
@@ -33,14 +38,31 @@ public class UnitOfWork : IUnitOfWork
         Orders = new OrderRepository(connection, transaction);
 
         // Om inget ProductSubject injiceras, skapa ett nytt
-        _productSubject = new ProductSubject();
+        _entitySubject = new EntitySubject<object>();
 
         // Registrera standardobservatörer
-        _productSubject.Attach(new EmailNotificationFactory());
+        _entitySubject.Attach(new EmailNotificationFactory());
     }
+    public async Task AttachObserver(INotificationObserverFactory factory)
+    {
+        await _entitySubject.Attach(factory);
+    }
+    public async Task DetachObserver(INotificationObserver observer)
+    {
+        await _entitySubject.Detach(observer);
+    }
+
     public async Task NotifyProductAdded(Product product)
     {
-        await _productSubject.Notify(product);
+        await _entitySubject.Notify(product);
+    }
+    public async Task NotifyCustomerAdded(Customer customer)
+    {
+        await _entitySubject.Notify(customer);
+    }
+    public async Task NotifyOrderAdded(Order order)
+    {
+        await _entitySubject.Notify(order);
     }
 
     public void Dispose()
