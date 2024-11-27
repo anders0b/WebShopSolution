@@ -34,6 +34,19 @@ public class OrderRepository : Repository<Order>, IOrderRepository
 
         return orderId;
     }
+    public override async Task Update(Order entity)
+    {
+        var orderParams = new
+        {
+            entity.OrderDate,
+            entity.IsShipped,
+            entity.Id
+        };
+
+        var sql = @"UPDATE Orders SET OrderDate = @OrderDate, IsShipped = @IsShipped WHERE Id = @Id";
+
+        await _connectionString.ExecuteAsync(sql, orderParams, _transaction);
+    }
     public async Task AddCustomerToOrder(int orderId, int customerId)
     {
         var sql = "UPDATE Orders SET CustomerId = @CustomerId WHERE Id = @OrderId";

@@ -62,7 +62,7 @@ public class Repository<T> : IRepository<T> where T : class
         await _connectionString.ExecuteAsync(sql, new {Id = id}, transaction: _transaction);
     }
 
-    public async Task Update(T entity)
+    public virtual async Task Update(T entity)
     {
         var tableName = $"{typeof(T).Name}s";
 

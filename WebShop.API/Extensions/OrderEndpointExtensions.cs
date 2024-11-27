@@ -60,12 +60,12 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> UpdateOrder(IOrderService orderService, Order order)
     {
-        if (order != null)
+        if (order.Id != 0)
         {
             await orderService.UpdateOrder(order);
             return Results.Ok($"Update order {order}");
         }
-        return Results.NotFound();
+        return Results.Problem();
     }
     public static async Task<IResult> UpdateOrderStatus(IOrderService orderService, int id, bool isShipped)
     {

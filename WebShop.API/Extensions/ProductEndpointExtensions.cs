@@ -60,12 +60,12 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> UpdateProduct(IProductServices productService, Product product)
         {
-            if (product != null)
+            if (product.Id != 0)
             {
                 await productService.UpdateProduct(product);
                 return Results.Ok($"Updated product {product}");
             }
-            return Results.Problem();
+            return Results.Problem("Please enter a valid product Id");
         }
         public static async Task<IResult> GetAllProductsFromOrder(IProductServices productService, int orderId)
         {

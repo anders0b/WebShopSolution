@@ -59,7 +59,7 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
 
-        Product updatedProduct = null!;
+        Product updatedProduct = new Product { Id = 0, Description = "Test", Name = "Testprodukt", Price = 60.99, Stock = 50 };
 
         //Act
         var result = await ProductEndpointExtensions.UpdateProduct(fakeProductService, updatedProduct);

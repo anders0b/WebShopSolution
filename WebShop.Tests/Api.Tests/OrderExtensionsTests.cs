@@ -8,8 +8,21 @@ namespace WebShop.Tests.Api.Tests
 {
     public class OrderExtensionsTests
     {
-        private Order _testOrder = new Order();
+        private Order _testOrder = new Order { IsShipped = true };
 
+        [Fact]
+        public async Task AddOverride_CreateOrder_ShouldReturnOk()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+
+            //Act
+            var result = await OrderEndpointExtensions.CreateOrder(fakeOrderService, _testOrder);
+
+            //Assert
+            var resultValue = Assert.IsType<Ok<string>>(result);
+            A.CallTo(() => fakeOrderService.CreateOrder(_testOrder)).MustHaveHappenedOnceExactly();
+        }
         [Fact]
         public async Task GetAllOrders_ReturnsOkResult()
         {
@@ -114,7 +127,7 @@ namespace WebShop.Tests.Api.Tests
         {
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
-            Order order = new Order();
+            Order order = new Order { Id = 1 };
 
             //Act
             var result = await OrderEndpointExtensions.UpdateOrder(fakeOrderService, order);
@@ -128,13 +141,13 @@ namespace WebShop.Tests.Api.Tests
         {
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
-            Order order = null!;
+            Order order = new Order { Id = 0 };
 
             //Act
             var result = await OrderEndpointExtensions.UpdateOrder(fakeOrderService, order);
 
             //Assert
-            var resultValue = Assert.IsType<NotFound>(result);
+            var resultValue = Assert.IsType<ProblemHttpResult>(result);
             A.CallTo(() => fakeOrderService.UpdateOrder(order)).MustNotHaveHappened();
         }
         [Fact]
