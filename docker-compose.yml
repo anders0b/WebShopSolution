@@ -3,7 +3,7 @@
         image: ${DOCKER_REGISTRY-}webshopapi
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: WebShop.API/Dockerfile
         ports:
         - "5000:80"
         depends_on:
@@ -21,6 +21,12 @@
         environment:
             SA_PASSWORD: "Password123"
             ACCEPT_EULA: "Y"
+        healthcheck:
+            test: ["CMD", "nc", "-z", "localhost", "1433"]
+            interval: 30s
+            retries: 5
+            start_period: 10s
+            timeout: 10s
         networks:
         - webshop
  
@@ -29,7 +35,7 @@
         container_name: dbup-migrations
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: WebShop.API/Dockerfile
         command: ["dotnet", "WebShop.API.dll", "migrate"]
         environment:
         - ASPNETCORE_ENVIRONMENT=Development
