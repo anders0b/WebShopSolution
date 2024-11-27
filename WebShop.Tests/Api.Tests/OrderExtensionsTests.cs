@@ -42,6 +42,7 @@ namespace WebShop.Tests.Api.Tests
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
             int id = 1;
+            A.CallTo(() => fakeOrderService.GetOrderById(id)).Returns(new Order { Id = id });
 
             //Act
             var result = await OrderEndpointExtensions.GetOrderById(fakeOrderService, id);
@@ -62,7 +63,7 @@ namespace WebShop.Tests.Api.Tests
 
             //Assert
             Assert.IsType<NotFound>(result);
-            A.CallTo(() => fakeOrderService.GetOrderById(id)).MustNotHaveHappened();
+            A.CallTo(() => fakeOrderService.GetOrderById(id)).MustHaveHappenedOnceExactly();
         }
         [Fact]
         public async Task AddProductsToOrder_ReturnsOkResult_WhenOrderIdIsValid()
@@ -71,6 +72,7 @@ namespace WebShop.Tests.Api.Tests
             var fakeOrderService = A.Fake<IOrderService>();
             int orderId = 1;
             var productIds = new List<int> { 1, 2, 3 };
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order { Id = orderId });
 
             //Act
             var result = await OrderEndpointExtensions.AddProductsToOrder(fakeOrderService, orderId, productIds);
@@ -100,6 +102,7 @@ namespace WebShop.Tests.Api.Tests
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
             int id = 1;
+            A.CallTo(() => fakeOrderService.GetOrderById(id)).Returns(new Order { Id = id });
 
             //Act
             var result = await OrderEndpointExtensions.RemoveOrder(fakeOrderService, id);
@@ -128,6 +131,7 @@ namespace WebShop.Tests.Api.Tests
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
             Order order = new Order { Id = 1 };
+            A.CallTo(() => fakeOrderService.GetOrderById(order.Id)).Returns(order);
 
             //Act
             var result = await OrderEndpointExtensions.UpdateOrder(fakeOrderService, order);
@@ -137,7 +141,7 @@ namespace WebShop.Tests.Api.Tests
             A.CallTo(() => fakeOrderService.UpdateOrder(order)).MustHaveHappenedOnceExactly();
         }
         [Fact]
-        public async Task UpdateOrder_ReturnsProblem_WhenIdIsInvalid()
+        public async Task UpdateOrder_ReturnsNotFound_WhenIdIsInvalid()
         {
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
@@ -147,7 +151,7 @@ namespace WebShop.Tests.Api.Tests
             var result = await OrderEndpointExtensions.UpdateOrder(fakeOrderService, order);
 
             //Assert
-            var resultValue = Assert.IsType<ProblemHttpResult>(result);
+            var resultValue = Assert.IsType<NotFound>(result);
             A.CallTo(() => fakeOrderService.UpdateOrder(order)).MustNotHaveHappened();
         }
         [Fact]
@@ -157,6 +161,7 @@ namespace WebShop.Tests.Api.Tests
             var fakeOrderService = A.Fake<IOrderService>();
             int id = 1;
             bool isShipped = true;
+            A.CallTo(() => fakeOrderService.GetOrderById(id)).Returns(new Order { Id = id });
 
             //Act
             var result = await OrderEndpointExtensions.UpdateOrderStatus(fakeOrderService, id, isShipped);

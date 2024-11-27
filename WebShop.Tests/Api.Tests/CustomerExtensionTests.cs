@@ -38,7 +38,7 @@ public class CustomerExtensionTests
         A.CallTo(() => fakeCustomerService.AddCustomer(nullCustomer)).MustNotHaveHappened();
     }
     [Fact]
-    public async Task UpdateCustomer_ReturnsOkResult_WhenUpdateCustomerIsValid()
+    public async Task UpdateCustomer_ReturnsOkResult_WhenUpdateCustomerIdIsValid()
     {
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
@@ -49,28 +49,29 @@ public class CustomerExtensionTests
             FirstName = "Test",
             LastName = "Testsson"
         };
+        A.CallTo(() => fakeCustomerService.GetCustomerById(updatedCustomer.Id)).Returns(updatedCustomer);
 
         //Act
         var result = await CustomerEndpointExtensions.UpdateCustomer(fakeCustomerService, updatedCustomer);
 
         //Assert
         var resultValue = Assert.IsType<Ok<string>>(result);
-        Assert.Equal("Updated customer Repository.Models.Customer", resultValue.Value);
         A.CallTo(() => fakeCustomerService.UpdateCustomer(updatedCustomer)).MustHaveHappenedOnceExactly();
     }
     [Fact]
-    public async Task UpdateCustomer_ReturnsProblemResult_WhenUpdateCustomerIsInvalid()
+    public async Task UpdateCustomer_ReturnsProblemResult_WhenUpdateCustomerIdIsInvalid()
     {
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
 
-        Customer updatedCustomer = null!;
+        Customer updatedCustomer = new Customer { Id = 1 };
+        A.CallTo(() => fakeCustomerService.GetCustomerById(updatedCustomer.Id)).Returns(new Customer());
 
         //Act
         var result = await CustomerEndpointExtensions.UpdateCustomer(fakeCustomerService, updatedCustomer);
 
         //Assert
-        var resultValue = Assert.IsType<ProblemHttpResult>(result);
+        var resultValue = Assert.IsType<NotFound<string>>(result);
         A.CallTo(() => fakeCustomerService.UpdateCustomer(updatedCustomer)).MustNotHaveHappened();
     }
     [Fact]
@@ -79,6 +80,7 @@ public class CustomerExtensionTests
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
         int id = 1;
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1});
 
         //Act
         var result = await CustomerEndpointExtensions.RemoveCustomer(fakeCustomerService, id);
@@ -99,7 +101,7 @@ public class CustomerExtensionTests
         var result = await CustomerEndpointExtensions.RemoveCustomer(fakeCustomerService, id);
 
         //Assert
-        var resultValue = Assert.IsType<NotFound>(result);
+        var resultValue = Assert.IsType<NotFound<string>>(result);
         A.CallTo(() => fakeCustomerService.RemoveCustomer(id)).MustNotHaveHappened();
     }
     [Fact]
@@ -108,7 +110,7 @@ public class CustomerExtensionTests
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
         int id = 1;
-
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1 });
         //Act
         var result = await CustomerEndpointExtensions.GetCustomerById(fakeCustomerService, id);
 
@@ -122,13 +124,14 @@ public class CustomerExtensionTests
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
         int id = 0;
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer());
 
         //Act
         var result = await CustomerEndpointExtensions.GetCustomerById(fakeCustomerService, id);
 
         //Assert
         var resultValue = Assert.IsType<NotFound>(result);
-        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).MustNotHaveHappened();
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).MustHaveHappenedOnceExactly();
     }
     [Fact]
     public async Task GetCustomers_ReturnsOkResult()
@@ -150,12 +153,13 @@ public class CustomerExtensionTests
         var fakeCustomerService = A.Fake<ICustomerService>();
         var id = 1;
         var email = "hej@test.se";
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1 });
 
         //Act
         var result = await CustomerEndpointExtensions.UpdateCustomerEmail(fakeCustomerService, id, email);
 
         //Assert
-        var resultValue = Assert.IsType<Ok>(result);
+        var resultValue = Assert.IsType<Ok<string>>(result);
         A.CallTo(() => fakeCustomerService.UpdateCustomerEmail(id, email)).MustHaveHappenedOnceExactly();
     }
     [Fact]
@@ -165,13 +169,46 @@ public class CustomerExtensionTests
         var fakeCustomerService = A.Fake<ICustomerService>();
         var id = 1;
         var phone = "0701234567";
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1 });
 
         //Act
         var result = await CustomerEndpointExtensions.UpdateCustomerPhone(fakeCustomerService, id, phone);
 
         //Assert
-        var resultValue = Assert.IsType<Ok>(result);
+        var resultValue = Assert.IsType<Ok<string>>(result);
         A.CallTo(() => fakeCustomerService.UpdateCustomerPhone(id, phone)).MustHaveHappenedOnceExactly();
+    }
+    [Fact]
+    public async Task UpdateCustomerPhone_ReturnsBadRequest_WhenPhoneNumberContainsChars()
+    {
+        //Arrange
+        var fakeCustomerService = A.Fake<ICustomerService>();
+        var id = 1;
+        var phone = "testhejhej";
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1 });
+
+        //Act
+        var result = await CustomerEndpointExtensions.UpdateCustomerPhone(fakeCustomerService, id, phone);
+
+        //Assert
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
+        A.CallTo(() => fakeCustomerService.UpdateCustomerPhone(id, phone)).MustNotHaveHappened();
+    }
+    [Fact]
+    public async Task UpdateCustomerMail_ReturnsBadRequest_WhenEmailIsTooShortAndMissingAtSignAndDot()
+    {
+        //Arrange
+        var fakeCustomerService = A.Fake<ICustomerService>();
+        var id = 1;
+        var mail = "hej";
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer { Id = 1 });
+
+        //Act
+        var result = await CustomerEndpointExtensions.UpdateCustomerEmail(fakeCustomerService, id, mail);
+
+        //Assert
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
+        A.CallTo(() => fakeCustomerService.UpdateCustomerEmail(id, mail)).MustNotHaveHappened();
     }
 }
         

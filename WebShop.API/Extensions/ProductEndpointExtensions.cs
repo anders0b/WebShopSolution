@@ -33,16 +33,17 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> GetProductById(IProductServices productService, int id)
         {
-            if(id != 0)
+            var existingProduct = await productService.GetProductById(id);
+            if (existingProduct.Id != 0)
             {
-                var product = await productService.GetProductById(id);
-                return product is not null ? Results.Ok(product) : Results.NotFound();
+                return Results.Ok(existingProduct);
             }
             return Results.NotFound();
         }
         public static async Task<IResult> RemoveProduct(IProductServices productService, int id)
         {
-            if (id != 0)
+            var existingProduct = await productService.GetProductById(id);
+            if (existingProduct.Id != 0)
             {
                 await productService.RemoveProduct(id);
                 return Results.Ok($"Removed product {id}");
@@ -51,7 +52,8 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> UpdateStockQuantity(IProductServices productService, int id, int stock)
         {
-            if(id != 0)
+            var existingProduct = await productService.GetProductById(id);
+            if (existingProduct.Id != 0)
             {
                 await productService.UpdateStockQuantity(id, stock);
                 return Results.Ok($"Updated stock quantity for product {id}");
@@ -60,7 +62,8 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> UpdateProduct(IProductServices productService, Product product)
         {
-            if (product.Id != 0)
+            var existingProduct = await productService.GetProductById(product.Id);
+            if (existingProduct.Id != 0)
             {
                 await productService.UpdateProduct(product);
                 return Results.Ok($"Updated product {product}");

@@ -33,16 +33,21 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> GetOrderById(IOrderService orderService, int id)
     {
-        if(id != 0)
+        if(id <= 0)
         {
-            var order = await orderService.GetOrderById(id);
-            return order is not null ? Results.Ok(order) : Results.NotFound();
+            return Results.BadRequest("Invalid order ID");
         }
-        return Results.NotFound();
+        var existingOrder = await orderService.GetOrderById(id);
+        if (existingOrder.Id != 0)
+        {
+            return Results.Ok(existingOrder);
+        }
+        return Results.BadRequest();
     }
     public static async Task<IResult> AddProductsToOrder(IOrderService orderService, int orderId, List<int> productIds)
     {
-        if (orderId != 0 || productIds.Count != 0)
+        var existingOrder = await orderService.GetOrderById(orderId);
+        if (existingOrder.Id != 0)
         {
             await orderService.AddProductsToOrder(orderId, productIds);
             return Results.Ok($"Products added to order {orderId}");
@@ -51,7 +56,8 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> RemoveOrder(IOrderService orderService, int id)
     {
-        if (id != 0)
+        var existingOrder = await orderService.GetOrderById(id);
+        if (existingOrder.Id != 0)
         {
             await orderService.RemoveOrder(id);
             return Results.Ok($"Removed order {id}");
@@ -60,16 +66,19 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> UpdateOrder(IOrderService orderService, Order order)
     {
-        if (order.Id != 0)
-        {
+        var existingOrder = await orderService.GetOrderById(order.Id);
+        if (existingOrder.Id != 0)
+        { 
             await orderService.UpdateOrder(order);
             return Results.Ok($"Update order {order}");
         }
-        return Results.Problem();
+        return Results.NotFound();
     }
+
     public static async Task<IResult> UpdateOrderStatus(IOrderService orderService, int id, bool isShipped)
     {
-        if (id != 0)
+        var existingOrder = await orderService.GetOrderById(id);
+        if (existingOrder.Id != 0)
         {
             await orderService.UpdateOrderStatus(id, isShipped);
             return Results.Ok($"Shipping status is now: {isShipped}");

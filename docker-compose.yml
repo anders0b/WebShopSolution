@@ -3,7 +3,7 @@
         image: ${DOCKER_REGISTRY-}webshopapi
         build:
             context: .
-            dockerfile: WebShop.API/Dockerfile
+            dockerfile: Dockerfile
         ports:
         - "5000:80"
         depends_on:
@@ -27,7 +27,7 @@
         container_name: dbup-migrations
         build:
             context: .
-            dockerfile: WebShop.API/Dockerfile
+            dockerfile: Dockerfile
         command: ["dotnet", "WebShop.API.dll", "migrate"]
         environment:
         - ASPNETCORE_ENVIRONMENT=Development

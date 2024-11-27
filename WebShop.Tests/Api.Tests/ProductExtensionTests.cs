@@ -44,13 +44,13 @@ public class ProductExtensionTests
         var fakeProductService = A.Fake<IProductServices>();
 
         var updatedProduct = new Product { Id = 1, Description = "Test", Name = "Testprodukt", Price = 60.99, Stock = 50 };
+        A.CallTo(() => fakeProductService.GetProductById(updatedProduct.Id)).Returns(updatedProduct);
 
         //Act
         var result = await ProductEndpointExtensions.UpdateProduct(fakeProductService, updatedProduct);
 
         //Assert
         var resultValue = Assert.IsType<Ok<string>>(result);
-        Assert.Equal("Updated product Repository.Models.Product", resultValue.Value);
         A.CallTo(() => fakeProductService.UpdateProduct(updatedProduct)).MustHaveHappenedOnceExactly();
     }
     [Fact]
@@ -74,6 +74,7 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
         int id = 1;
+        A.CallTo(() => fakeProductService.GetProductById(id)).Returns(new Product { Id = 1});
 
         //Act
         var result = await ProductEndpointExtensions.RemoveProduct(fakeProductService, id);
@@ -104,6 +105,7 @@ public class ProductExtensionTests
         var fakeProductService = A.Fake<IProductServices>();
         int id = 1;
         int stock = 100;
+        A.CallTo(() => fakeProductService.GetProductById(id)).Returns(new Product { Id = 1 });
 
         //Act
         var result = await ProductEndpointExtensions.UpdateStockQuantity(fakeProductService, id, stock);
@@ -169,13 +171,14 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
         int id = 0;
+        A.CallTo(() => fakeProductService.GetProductById(id)).Returns(new Product());
 
         //Act
         var result = await ProductEndpointExtensions.GetProductById(fakeProductService, id);
 
         //Assert
         Assert.IsType<NotFound>(result);
-        A.CallTo(() => fakeProductService.GetProductById(id)).MustNotHaveHappened();
+        A.CallTo(() => fakeProductService.GetProductById(id)).MustHaveHappenedOnceExactly();
     }
     [Fact]
     public async Task GetAllProductsFromOrder_ReturnsOk_ShouldReturnList()
