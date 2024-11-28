@@ -64,14 +64,14 @@ public class CustomerExtensionTests
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
 
-        Customer updatedCustomer = new Customer { Id = 1 };
-        A.CallTo(() => fakeCustomerService.GetCustomerById(updatedCustomer.Id)).Returns(new Customer());
+        Customer updatedCustomer = new Customer();
+        A.CallTo(() => fakeCustomerService.GetCustomerById(updatedCustomer.Id)).Returns((Customer)null!);
 
         //Act
         var result = await CustomerEndpointExtensions.UpdateCustomer(fakeCustomerService, updatedCustomer);
 
         //Assert
-        var resultValue = Assert.IsType<NotFound<string>>(result);
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
         A.CallTo(() => fakeCustomerService.UpdateCustomer(updatedCustomer)).MustNotHaveHappened();
     }
     [Fact]
@@ -101,7 +101,7 @@ public class CustomerExtensionTests
         var result = await CustomerEndpointExtensions.RemoveCustomer(fakeCustomerService, id);
 
         //Assert
-        var resultValue = Assert.IsType<NotFound<string>>(result);
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
         A.CallTo(() => fakeCustomerService.RemoveCustomer(id)).MustNotHaveHappened();
     }
     [Fact]
@@ -124,14 +124,14 @@ public class CustomerExtensionTests
         //Arrange
         var fakeCustomerService = A.Fake<ICustomerService>();
         int id = 0;
-        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns(new Customer());
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).Returns((Customer)null!);
 
         //Act
         var result = await CustomerEndpointExtensions.GetCustomerById(fakeCustomerService, id);
 
         //Assert
-        var resultValue = Assert.IsType<NotFound>(result);
-        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).MustHaveHappenedOnceExactly();
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
+        A.CallTo(() => fakeCustomerService.GetCustomerById(id)).MustNotHaveHappened();
     }
     [Fact]
     public async Task GetCustomers_ReturnsOkResult()

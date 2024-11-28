@@ -25,6 +25,7 @@ CREATE TABLE [dbo].[Orders] (
 CREATE TABLE [dbo].[OrderItems] (
 	[OrderId] INT NOT NULL,
 	[ProductId] INT NOT NULL,
+	[Quantity] INT NOT NULL,
 	PRIMARY KEY ([OrderId], [ProductId]),
 	FOREIGN KEY (OrderId) REFERENCES Orders(Id),
 	FOREIGN KEY (ProductId) REFERENCES Products(Id)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Repository.Models;
 using WebShop.API.Extensions;
+using WebShop.Services.DTO;
 using WebShop.Services.Services;
 
 namespace WebShop.Tests.Api.Tests
@@ -62,8 +63,8 @@ namespace WebShop.Tests.Api.Tests
             var result = await OrderEndpointExtensions.GetOrderById(fakeOrderService, id);
 
             //Assert
-            Assert.IsType<NotFound>(result);
-            A.CallTo(() => fakeOrderService.GetOrderById(id)).MustHaveHappenedOnceExactly();
+            Assert.IsType<BadRequest>(result);
+            A.CallTo(() => fakeOrderService.GetOrderById(id)).MustNotHaveHappened();
         }
         [Fact]
         public async Task AddProductsToOrder_ReturnsOkResult_WhenOrderIdIsValid()
@@ -71,7 +72,7 @@ namespace WebShop.Tests.Api.Tests
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
             int orderId = 1;
-            var productIds = new List<int> { 1, 2, 3 };
+            var productIds = new List<AddProductsToOrderRequest>();
             A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order { Id = orderId });
 
             //Act
@@ -87,13 +88,13 @@ namespace WebShop.Tests.Api.Tests
             //Arrange
             var fakeOrderService = A.Fake<IOrderService>();
             int orderId = 0;
-            var productIds = new List<int>();
+            var productIds = new List<AddProductsToOrderRequest> { (new AddProductsToOrderRequest { ProductId = 5, Quantity = 20 })};
 
             //Act
             var result = await OrderEndpointExtensions.AddProductsToOrder(fakeOrderService, orderId, productIds);
 
             //Assert
-            Assert.IsType<NotFound>(result);
+            Assert.IsType<BadRequest>(result);
             A.CallTo(() => fakeOrderService.AddProductsToOrder(orderId, productIds)).MustNotHaveHappened();
         }
         [Fact]
@@ -122,7 +123,7 @@ namespace WebShop.Tests.Api.Tests
             var result = await OrderEndpointExtensions.RemoveOrder(fakeOrderService, id);
 
             //Assert
-            Assert.IsType<NotFound>(result);
+            Assert.IsType<BadRequest>(result);
             A.CallTo(() => fakeOrderService.RemoveOrder(id)).MustNotHaveHappened();
         }
         [Fact]
@@ -151,7 +152,7 @@ namespace WebShop.Tests.Api.Tests
             var result = await OrderEndpointExtensions.UpdateOrder(fakeOrderService, order);
 
             //Assert
-            var resultValue = Assert.IsType<NotFound>(result);
+            var resultValue = Assert.IsType<BadRequest<string>>(result);
             A.CallTo(() => fakeOrderService.UpdateOrder(order)).MustNotHaveHappened();
         }
         [Fact]
@@ -182,8 +183,40 @@ namespace WebShop.Tests.Api.Tests
             var result = await OrderEndpointExtensions.UpdateOrderStatus(fakeOrderService, id, isShipped);
 
             //Assert
-            var resultValue = Assert.IsType<NotFound>(result);
+            var resultValue = Assert.IsType<BadRequest>(result);
             A.CallTo(() => fakeOrderService.UpdateOrderStatus(id, isShipped)).MustNotHaveHappened();
+        }
+        [Fact]
+        public async Task AddCustomerToOrder_ShouldReturnOkIfCustomerAndOrderIsValid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int customerId = 1;
+            int orderId = 1;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order { Id = orderId });
+
+            //Act
+            var result = await OrderEndpointExtensions.AddCustomerToOrder(fakeOrderService, orderId, customerId);
+
+            //Assert
+            var resultValue = Assert.IsType<Ok<string>>(result);
+            A.CallTo(() => fakeOrderService.AddCustomerToOrder(orderId, customerId)).MustHaveHappenedOnceExactly();
+        }
+        [Fact]
+        public async Task AddCustomerToOrder_ShouldReturnErrorIfCustomerAndOrderIsValid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int customerId = 1;
+            int orderId = 0;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order());
+
+            //Act
+            var result = await OrderEndpointExtensions.AddCustomerToOrder(fakeOrderService, orderId, customerId);
+
+            //Assert
+            var resultValue = Assert.IsType<BadRequest<string>>(result);
+            A.CallTo(() => fakeOrderService.AddCustomerToOrder(orderId, customerId)).MustNotHaveHappened();
         }
     }
 }

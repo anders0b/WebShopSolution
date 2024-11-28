@@ -1,6 +1,7 @@
 ﻿using FakeItEasy;
 using Repository.Models;
 using Repository.Repository;
+using WebShop.Repository.Models;
 using WebShop.Repository.Repository;
 
 namespace WebShop.Tests.Repository.Tests;
@@ -35,7 +36,7 @@ public class ProductRepositoryTests()
         var unitOfWorkFake = A.Fake<IUnitOfWork>();
 
         var orderId = 1;
-        A.CallTo(() => repositoryFake.GetAllProductsFromOrder(orderId)).Returns(new List<Product> { _testProduct });
+        A.CallTo(() => repositoryFake.GetAllProductsFromOrder(orderId)).Returns(new List<OrderItem> { new OrderItem { OrderId = 1, ProductId = 1, Quantity = 50 } });
         A.CallTo(() => unitOfWorkFake.Products).Returns(repositoryFake);
 
         //Act

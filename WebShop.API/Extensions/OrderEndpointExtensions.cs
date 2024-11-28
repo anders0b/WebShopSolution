@@ -1,4 +1,5 @@
 ﻿using Repository.Models;
+using WebShop.Services.DTO;
 using WebShop.Services.Services;
 
 namespace WebShop.API.Extensions;
@@ -14,6 +15,7 @@ public static class OrderEndpointExtensions
         group.MapPost("{orderId}", AddProductsToOrder).WithSummary("Add products to order");
         group.MapDelete("{Id}", RemoveOrder).WithSummary("Remove order");
         group.MapPut("", UpdateOrder).WithSummary("Update order");
+        group.MapPatch("{orderId}", AddCustomerToOrder).WithSummary("Add customer to order");
         group.MapPatch("{id}/{isShipped}", UpdateOrderStatus).WithSummary("Update shipping status");
         return app;
     }
@@ -24,7 +26,7 @@ public static class OrderEndpointExtensions
             await orderService.CreateOrder(order);
             return Results.Ok($"Order {order.Id} created");
         }
-        return Results.NotFound();
+        return Results.Problem();
     }
     public static async Task<IResult> GetAllOrders(IOrderService orderService)
     {
@@ -33,26 +35,25 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> GetOrderById(IOrderService orderService, int id)
     {
-        if(id <= 0)
+        if (id != 0)
         {
-            return Results.BadRequest("Invalid order ID");
-        }
-        var existingOrder = await orderService.GetOrderById(id);
-        if (existingOrder.Id != 0)
-        {
-            return Results.Ok(existingOrder);
+            var existingOrder = await orderService.GetOrderById(id);
+            if (existingOrder != null)
+            {
+                return Results.Ok(existingOrder);
+            }
         }
         return Results.BadRequest();
     }
-    public static async Task<IResult> AddProductsToOrder(IOrderService orderService, int orderId, List<int> productIds)
+    public static async Task<IResult> AddProductsToOrder(IOrderService orderService, int orderId, List<AddProductsToOrderRequest> products)
     {
         var existingOrder = await orderService.GetOrderById(orderId);
         if (existingOrder.Id != 0)
         {
-            await orderService.AddProductsToOrder(orderId, productIds);
+            await orderService.AddProductsToOrder(orderId, products);
             return Results.Ok($"Products added to order {orderId}");
         }
-        return Results.NotFound();
+        return Results.BadRequest();
     }
     public static async Task<IResult> RemoveOrder(IOrderService orderService, int id)
     {
@@ -62,7 +63,7 @@ public static class OrderEndpointExtensions
             await orderService.RemoveOrder(id);
             return Results.Ok($"Removed order {id}");
         }
-        return Results.NotFound();
+        return Results.BadRequest();
     }
     public static async Task<IResult> UpdateOrder(IOrderService orderService, Order order)
     {
@@ -72,7 +73,17 @@ public static class OrderEndpointExtensions
             await orderService.UpdateOrder(order);
             return Results.Ok($"Update order {order}");
         }
-        return Results.NotFound();
+        return Results.BadRequest("Please enter a valid order ID");
+    }
+    public static async Task<IResult> AddCustomerToOrder(IOrderService orderService, int orderId, int customerId)
+    {
+        var existingOrder = await orderService.GetOrderById(orderId);
+        if (existingOrder.Id != 0)
+        {
+            await orderService.AddCustomerToOrder(orderId, customerId);
+            return Results.Ok($"Added customer {customerId} to order {orderId}");
+        }
+        return Results.BadRequest("Please enter a valid order ID");
     }
 
     public static async Task<IResult> UpdateOrderStatus(IOrderService orderService, int id, bool isShipped)
@@ -83,7 +94,7 @@ public static class OrderEndpointExtensions
             await orderService.UpdateOrderStatus(id, isShipped);
             return Results.Ok($"Shipping status is now: {isShipped}");
         }
-        return Results.NotFound();
+        return Results.BadRequest();
     }
 
 }

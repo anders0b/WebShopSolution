@@ -10,8 +10,6 @@ public interface IRepository<T> where T : class
     Task<int> Add(T entity);
     Task Remove(int id);
     Task Update(T entity);
-
-    //void SetTransaction(IDbTransaction transaction);
 }
 public class Repository<T> : IRepository<T> where T : class
 {

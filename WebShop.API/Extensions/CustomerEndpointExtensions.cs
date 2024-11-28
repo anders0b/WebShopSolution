@@ -39,18 +39,24 @@ namespace WebShop.API.Extensions
             if (id != 0)
             {
                 var existingCustomer = await customerService.GetCustomerById(id);
-                return Results.Ok(existingCustomer);
+                if (existingCustomer != null)
+                {
+                    return Results.Ok(existingCustomer);
+                }
             }
             return Results.BadRequest("Please enter a valid customer ID");
         }
 
         public static async Task<IResult> RemoveCustomer(ICustomerService customerService, int id)
         {
-            var existingCustomer = await customerService.GetCustomerById(id);
-            if (existingCustomer.Id != 0)
+            if(id != 0)
             {
-                await customerService.RemoveCustomer(id);
-                return Results.Ok($"Removed customer {id}");
+                var existingCustomer = await customerService.GetCustomerById(id);
+                if (existingCustomer.Id != 0)
+                {
+                    await customerService.RemoveCustomer(id);
+                    return Results.Ok($"Removed customer {id}");
+                }
             }
 
             return Results.BadRequest("Customer not found");
@@ -71,39 +77,39 @@ namespace WebShop.API.Extensions
         public static async Task<IResult> UpdateCustomerEmail(ICustomerService customerService, int id, string email)
         {
             var existingCustomer = await customerService.GetCustomerById(id);
-            if (email.Contains('@') == false || email.Contains('.') == false)
+            if(existingCustomer != null)
             {
-                return Results.BadRequest("Email must contain @ and .");
+                if (email.Contains('@') == false || email.Contains('.') == false)
+                {
+                    return Results.BadRequest("Email must contain @ and .");
+                }
+                if (email == null)
+                {
+                    return Results.BadRequest("Email cannot be null");
+                }
+                await customerService.UpdateCustomerEmail(id, email);
+                return Results.Ok($"Customer Id: {id} new email: {email}");
             }
-            if (email == null)
-            {
-                return Results.BadRequest("Email cannot be null");
-            }
-            if (existingCustomer.Id == 0)
-            {
-                return Results.BadRequest("Customer not found");
-            }
-            await customerService.UpdateCustomerEmail(id, email);
-            return Results.Ok($"Customer Id: {id} new email: {email}");
+            return Results.BadRequest("Customer not found");
         }
 
         public static async Task<IResult> UpdateCustomerPhone(ICustomerService customerService, int id, string phone)
         {
             var existingCustomer = await customerService.GetCustomerById(id);
-            if (phone.Length != 10)
+            if(existingCustomer != null)
             {
-                return Results.BadRequest("Phone number must be 10 digits");
+                if (phone.Length != 10)
+                {
+                    return Results.BadRequest("Phone number must be 10 digits");
+                }
+                if (!phone.All(char.IsDigit))
+                {
+                    return Results.BadRequest("Phone number must be digits only");
+                }
+                await customerService.UpdateCustomerPhone(id, phone);
+                return Results.Ok($"Customer Id: {id} new phone number: {phone}");
             }
-            if(!phone.All(char.IsDigit))
-            {
-                return Results.BadRequest("Phone number must be digits only");
-            }
-            if(existingCustomer.Id == 0)
-            {
-                return Results.BadRequest("Customer not found");
-            }
-            await customerService.UpdateCustomerPhone(id, phone);
-            return Results.Ok($"Customer Id: {id} new phone number: {phone}");
+            return Results.BadRequest("Customer not found");
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
 using Repository.Models;
 using WebShop.API.Extensions;
+using WebShop.Repository.Models;
 using WebShop.Services.Services;
 
 namespace WebShop.Tests.Api.Tests;
@@ -65,7 +66,7 @@ public class ProductExtensionTests
         var result = await ProductEndpointExtensions.UpdateProduct(fakeProductService, updatedProduct);
 
         //Assert
-        var resultValue = Assert.IsType<ProblemHttpResult>(result);
+        var resultValue = Assert.IsType<BadRequest<string>>(result);
         A.CallTo(() => fakeProductService.UpdateProduct(updatedProduct)).MustNotHaveHappened();
     }
     [Fact]
@@ -95,7 +96,7 @@ public class ProductExtensionTests
         var result = await ProductEndpointExtensions.RemoveProduct(fakeProductService, id);
 
         //Assert
-        var resultValue = Assert.IsType<NotFound>(result);
+        var resultValue = Assert.IsType<BadRequest>(result);
         A.CallTo(() => fakeProductService.RemoveProduct(id)).MustNotHaveHappened();
     }
     [Fact]
@@ -127,7 +128,7 @@ public class ProductExtensionTests
         var result = await ProductEndpointExtensions.UpdateStockQuantity(fakeProductService, id, stock);
 
         //Assert
-        var resultValue = Assert.IsType<ProblemHttpResult>(result);
+        var resultValue = Assert.IsType<BadRequest>(result);
         A.CallTo(() => fakeProductService.UpdateStockQuantity(id, stock)).MustNotHaveHappened();
     }
     [Fact]
@@ -171,14 +172,13 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
         int id = 0;
-        A.CallTo(() => fakeProductService.GetProductById(id)).Returns(new Product());
 
         //Act
         var result = await ProductEndpointExtensions.GetProductById(fakeProductService, id);
 
         //Assert
-        Assert.IsType<NotFound>(result);
-        A.CallTo(() => fakeProductService.GetProductById(id)).MustHaveHappenedOnceExactly();
+        Assert.IsType<BadRequest>(result);
+        A.CallTo(() => fakeProductService.GetProductById(id)).MustNotHaveHappened();
     }
     [Fact]
     public async Task GetAllProductsFromOrder_ReturnsOk_ShouldReturnList()
@@ -186,14 +186,14 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
         int orderId = 1;
-        var products = new List<Product> { _testProduct };
+        var products = new List<OrderItem> { new OrderItem { OrderId = 1, ProductId = 1, Quantity = 5 } };
         A.CallTo(() => fakeProductService.GetAllProductsFromOrder(orderId)).Returns(products);
 
         //Act
         var result = await ProductEndpointExtensions.GetAllProductsFromOrder(fakeProductService, orderId);
 
         //Assert
-        var resultValue = Assert.IsType<Ok<IEnumerable<Product>>>(result);
+        var resultValue = Assert.IsType<Ok<IEnumerable<OrderItem>>>(result);
         Assert.Equal(products, resultValue.Value);
         A.CallTo(() => fakeProductService.GetAllProductsFromOrder(orderId)).MustHaveHappenedOnceExactly();
     }

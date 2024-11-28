@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Repository.Models;
+using WebShop.Repository.Models;
 using WebShop.Repository.Notifications.Factory;
 using WebShop.Repository.Repository;
+using WebShop.Services.DTO;
 
 namespace WebShop.Services.Services;
 
@@ -9,11 +11,12 @@ public interface IOrderService
 {
     Task CreateOrder(Order order);
     Task<IEnumerable<Order>> GetAllOrders();
-    Task AddProductsToOrder(int orderId, List<int> productIds);
+    Task AddProductsToOrder(int orderId, List<AddProductsToOrderRequest> products);
     Task<Order> GetOrderById(int id);
     Task RemoveOrder(int id);
     Task UpdateOrder(Order order);
     Task UpdateOrderStatus(int id, bool isShipped);
+    Task AddCustomerToOrder(int orderId, int customerId);
 }
 public class OrderService : IOrderService
 {
@@ -25,14 +28,39 @@ public class OrderService : IOrderService
         _loggerFactory = loggerfactory;
     }
 
-    public async Task AddProductsToOrder(int orderId, List<int> productIds)
+    public async Task AddCustomerToOrder(int orderId, int customerId)
     {
-        if (orderId == 0 || productIds.Count == 0)
+        var existingOrder = await _unitOfWork.Orders.GetById(orderId);
+        var existingCustomer = await _unitOfWork.Customers.GetById(customerId);
+        if (existingOrder != null && existingCustomer != null)
         {
-            throw new Exception("Order Id and Products cannot be null");
+            await _unitOfWork.Orders.AddCustomerToOrder(orderId, customerId);
         }
-        await _unitOfWork.Orders.AddProductsToOrder(orderId, productIds);
-        await _unitOfWork.SaveChangesAsync();
+        else
+        {
+            throw new Exception("Order or Customer does not exist");
+        }
+    }
+
+    public async Task AddProductsToOrder(int orderId, List<AddProductsToOrderRequest> products)
+    {
+        var existingOrder = await _unitOfWork.Orders.GetById(orderId);
+        var orderItems = new List<OrderItem>();
+        {
+            if (existingOrder != null)
+            {
+                foreach (var product in products)
+                {
+                    orderItems.Add(new OrderItem
+                    {
+                        ProductId = product.ProductId,
+                        Quantity = product.Quantity
+                    });
+                }
+                await _unitOfWork.Orders.AddProductsToOrder(orderId, orderItems);
+                await _unitOfWork.SaveChangesAsync();
+            }
+        }
     }
 
     public async Task CreateOrder(Order order)
@@ -55,11 +83,15 @@ public class OrderService : IOrderService
     public async Task<Order> GetOrderById(int id)
     {
         var order = await _unitOfWork.Orders.GetById(id);
-        var orderProducts = await _unitOfWork.Products.GetAllProductsFromOrder(id);
-        var customer = await _unitOfWork.Customers.GetCustomerFromOrder(id);
-        order.Customer = customer;
-        order.Products = (List<Product>)orderProducts;
-        return order;
+        if (order != null)
+        {
+            var orderProducts = await _unitOfWork.Products.GetAllProductsFromOrder(id);
+            var customer = await _unitOfWork.Customers.GetCustomerFromOrder(id);
+            order.Customer = customer;
+            order.OrderItems = (List<OrderItem>)orderProducts;
+            return order;
+        }
+        return new Order();
     }
 
     public async Task RemoveOrder(int id)

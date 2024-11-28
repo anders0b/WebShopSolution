@@ -1,5 +1,6 @@
 ﻿using FakeItEasy;
 using Repository.Models;
+using WebShop.Repository.Models;
 using WebShop.Repository.Repository;
 
 namespace WebShop.Tests.Repository.Tests;
@@ -57,5 +58,23 @@ public class OrderRepositoryTests
         //Assert
         A.CallTo(() => repositoryFake.UpdateOrderStatus(_testOrder.Id, status)).MustHaveHappenedOnceExactly();
         Assert.True(_testOrder.IsShipped);
+    }
+    [Fact]
+    public async Task OrderRepository_AddProductsToOrder_ShouldIncreaseAmountOfProductsInOrder()
+    {
+        //Arrange
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
+        var orderId = 1;
+        var orderItems = new List<OrderItem> { new OrderItem { OrderId = 1, ProductId = 1, Quantity = 50 } };
+
+        A.CallTo(() => unitOfWorkFake.Orders).Returns(repositoryFake);
+
+        //Act
+        await unitOfWorkFake.Orders.AddProductsToOrder(orderId, orderItems);
+
+        //Assert
+        A.CallTo(() => repositoryFake.AddProductsToOrder(orderId, orderItems)).MustHaveHappenedOnceExactly();
+
     }
 }

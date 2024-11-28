@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Repository.Models;
+using WebShop.Repository.Models;
 using WebShop.Repository.Notifications.Factory;
 using WebShop.Repository.Repository;
 
@@ -13,7 +14,7 @@ namespace WebShop.Services.Services
         Task RemoveProduct(int id);
         Task UpdateProduct(Product product);
         Task UpdateStockQuantity(int id, int stock);
-        Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId);
+        Task<IEnumerable<OrderItem>> GetAllProductsFromOrder(int orderId);
     }
     public class ProductServices : IProductServices
     {
@@ -64,7 +65,7 @@ namespace WebShop.Services.Services
             await _unitOfWork.Products.UpdateStockQuantity(id, stock);
             await _unitOfWork.SaveChangesAsync();
         }
-        public async Task<IEnumerable<Product>> GetAllProductsFromOrder(int orderId)
+        public async Task<IEnumerable<OrderItem>> GetAllProductsFromOrder(int orderId)
         {
             return await _unitOfWork.Products.GetAllProductsFromOrder(orderId);
         }

@@ -2,12 +2,13 @@
 using Repository.Models;
 using Repository.Repository;
 using System.Data;
+using WebShop.Repository.Models;
 
 namespace WebShop.Repository.Repository;
 
 public interface IOrderRepository : IRepository<Order>
 {
-    Task AddProductsToOrder(int orderId, List<int> productIds);
+    Task AddProductsToOrder(int orderId, List<OrderItem> products);
     Task AddCustomerToOrder(int orderId, int customerId);
     Task UpdateOrderStatus(int orderId, bool isShipped);
 }
@@ -54,15 +55,40 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         var rowsAffected = await _connectionString.ExecuteAsync(sql, new { CustomerId = customerId, OrderId = orderId }, _transaction);
     }
 
-    public async Task AddProductsToOrder(int orderId, List<int> productIds)
+    public async Task AddProductsToOrder(int orderId, List<OrderItem> orderItems)
     {
         var tableName = "OrderItems";
 
-        var sql = $"INSERT INTO {tableName} (OrderId, ProductId) VALUES (@OrderId, @ProductId);";
+        var existingProductsSql = $"SELECT ProductId, Quantity FROM {tableName} WHERE OrderId = @OrderId AND ProductId IN @ProductIds";
 
-        var orderItems = productIds.Select(productId => new { OrderId = orderId, ProductId = productId });
+        var existingProducts = await _connectionString.QueryAsync<OrderItem>(existingProductsSql, new { OrderId = orderId, ProductIds = orderItems.Select(p => p.ProductId).ToArray() }, transaction: _transaction);
 
-        await _connectionString.ExecuteAsync(sql, orderItems, transaction: _transaction);
+        var productsToInsert = new List<OrderItem>();
+        var productsToUpdate = new List<OrderItem>();
+
+        foreach(var product in orderItems)
+        {
+            var existingProduct = existingProducts.FirstOrDefault(p => p.ProductId == product.ProductId);
+            if (existingProduct == default)
+            {
+                productsToInsert.Add(product);
+            }
+            else
+            {
+                productsToUpdate.Add(product);
+            }
+        }
+        if(productsToUpdate.Any())
+        {
+            var updateSql = $"UPDATE {tableName} SET Quantity = @Quantity WHERE OrderId = @OrderId AND ProductId = @ProductId";
+            await _connectionString.ExecuteAsync(updateSql, productsToUpdate, transaction: _transaction);
+        }
+        if (productsToInsert.Any())
+        {
+            var insertSql = $"INSERT INTO {tableName} (OrderId, ProductId, Quantity) VALUES (@OrderId, @ProductId, @Quantity);";
+            await _connectionString.ExecuteAsync(insertSql, productsToInsert.Select(p => new { OrderId = orderId, p.ProductId, p.Quantity }), transaction: _transaction);
+        }
+
     }
 
     public async Task UpdateOrderStatus(int orderId, bool isShipped)

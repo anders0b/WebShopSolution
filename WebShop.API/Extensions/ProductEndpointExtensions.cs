@@ -33,12 +33,15 @@ namespace WebShop.API.Extensions
         }
         public static async Task<IResult> GetProductById(IProductServices productService, int id)
         {
-            var existingProduct = await productService.GetProductById(id);
-            if (existingProduct.Id != 0)
+            if(id != 0)
             {
-                return Results.Ok(existingProduct);
+                var existingProduct = await productService.GetProductById(id);
+                if (existingProduct.Id != 0)
+                {
+                    return Results.Ok(existingProduct);
+                }
             }
-            return Results.NotFound();
+            return Results.BadRequest();
         }
         public static async Task<IResult> RemoveProduct(IProductServices productService, int id)
         {
@@ -48,7 +51,7 @@ namespace WebShop.API.Extensions
                 await productService.RemoveProduct(id);
                 return Results.Ok($"Removed product {id}");
             }
-            return Results.NotFound();
+            return Results.BadRequest();
         }
         public static async Task<IResult> UpdateStockQuantity(IProductServices productService, int id, int stock)
         {
@@ -58,7 +61,7 @@ namespace WebShop.API.Extensions
                 await productService.UpdateStockQuantity(id, stock);
                 return Results.Ok($"Updated stock quantity for product {id}");
             }
-            return Results.Problem();
+            return Results.BadRequest();
         }
         public static async Task<IResult> UpdateProduct(IProductServices productService, Product product)
         {
@@ -68,7 +71,7 @@ namespace WebShop.API.Extensions
                 await productService.UpdateProduct(product);
                 return Results.Ok($"Updated product {product}");
             }
-            return Results.Problem("Please enter a valid product Id");
+            return Results.BadRequest("Please enter a valid product Id");
         }
         public static async Task<IResult> GetAllProductsFromOrder(IProductServices productService, int orderId)
         {
