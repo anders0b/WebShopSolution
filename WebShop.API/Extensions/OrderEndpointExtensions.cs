@@ -77,8 +77,7 @@ public static class OrderEndpointExtensions
     }
     public static async Task<IResult> AddCustomerToOrder(IOrderService orderService, int orderId, int customerId)
     {
-        var existingOrder = await orderService.GetOrderById(orderId);
-        if (existingOrder.Id != 0)
+        if (orderId != 0)
         {
             await orderService.AddCustomerToOrder(orderId, customerId);
             return Results.Ok($"Added customer {customerId} to order {orderId}");

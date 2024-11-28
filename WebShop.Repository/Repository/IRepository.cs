@@ -45,7 +45,7 @@ public class Repository<T> : IRepository<T> where T : class
         return await _connectionString.QueryAsync<T>($"SELECT * FROM {tableName}", transaction: _transaction);
     }
 
-    public async Task<T> GetById(int id)
+    public virtual async Task<T> GetById(int id)
     {
         var tableName = $"{typeof(T).Name}s";
  

@@ -14,7 +14,6 @@ public interface ICustomerService
     Task UpdateCustomer(Customer customer);
     Task UpdateCustomerEmail(int id, string email);
     Task UpdateCustomerPhone(int id, string phone);
-    Task<Customer> GetCustomerFromOrder(int orderId);
 }
 public class CustomerService : ICustomerService
 {
@@ -48,11 +47,6 @@ public class CustomerService : ICustomerService
     public async Task<Customer> GetCustomerById(int id)
     {
         return await _unitOfWork.Customers.GetById(id);
-    }
-
-    public async Task<Customer> GetCustomerFromOrder(int orderId)
-    {
-        return await _unitOfWork.Customers.GetCustomerFromOrder(orderId);
     }
 
     public async Task RemoveCustomer(int id)

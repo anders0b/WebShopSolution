@@ -35,6 +35,7 @@ public class OrderService : IOrderService
         if (existingOrder != null && existingCustomer != null)
         {
             await _unitOfWork.Orders.AddCustomerToOrder(orderId, customerId);
+            await _unitOfWork.SaveChangesAsync();
         }
         else
         {
@@ -85,13 +86,12 @@ public class OrderService : IOrderService
         var order = await _unitOfWork.Orders.GetById(id);
         if (order != null)
         {
-            var orderProducts = await _unitOfWork.Products.GetAllProductsFromOrder(id);
-            var customer = await _unitOfWork.Customers.GetCustomerFromOrder(id);
-            order.Customer = customer;
-            order.OrderItems = (List<OrderItem>)orderProducts;
             return order;
         }
-        return new Order();
+        else
+        {
+            throw new Exception("Order does not exist");
+        }
     }
 
     public async Task RemoveOrder(int id)

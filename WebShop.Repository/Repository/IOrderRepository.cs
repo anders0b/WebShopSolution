@@ -2,6 +2,7 @@
 using Repository.Models;
 using Repository.Repository;
 using System.Data;
+using System.Reflection.Metadata.Ecma335;
 using WebShop.Repository.Models;
 
 namespace WebShop.Repository.Repository;
@@ -35,6 +36,28 @@ public class OrderRepository : Repository<Order>, IOrderRepository
 
         return orderId;
     }
+    public override async Task<Order> GetById(int id)
+    {
+        var sql = @"
+            SELECT o.*, c.* 
+            FROM Orders o
+            JOIN Customers c ON o.CustomerId = c.Id
+            WHERE o.Id = @Id";
+
+        var order = await _connectionString.QueryAsync<Order, Customer, Order>(
+        sql,
+        (order, customer) =>
+        {
+            order.Customer = customer;  // Assign the customer to the order
+            return order;
+        },
+        new { Id = id },
+        transaction: _transaction,
+        splitOn: "Id" // This tells Dapper how to split the result set between `Order` and `Customer`   
+        );
+
+        return order.FirstOrDefault() ?? default!;
+    }
     public override async Task Update(Order entity)
     {
         var orderParams = new
@@ -52,7 +75,7 @@ public class OrderRepository : Repository<Order>, IOrderRepository
     {
         var sql = "UPDATE Orders SET CustomerId = @CustomerId WHERE Id = @OrderId";
 
-        var rowsAffected = await _connectionString.ExecuteAsync(sql, new { CustomerId = customerId, OrderId = orderId }, _transaction);
+        await _connectionString.ExecuteAsync(sql, new { OrderId = orderId, CustomerId = customerId }, _transaction);
     }
 
     public async Task AddProductsToOrder(int orderId, List<OrderItem> orderItems)
@@ -90,7 +113,6 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         }
 
     }
-
     public async Task UpdateOrderStatus(int orderId, bool isShipped)
     {
         var tableName = "Orders";

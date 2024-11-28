@@ -84,25 +84,5 @@ namespace WebShop.Tests.Repository.Tests
             A.CallTo(() => unitOfWorkFake.Customers.UpdateCustomerPhone(_testCustomer.Id, newPhone)).MustHaveHappenedOnceExactly();
             Assert.Equal(newPhone, _testCustomer.Phone);
         }
-        [Fact]
-        public async Task CustomerRepository_GetCustomerFromOrder_ShouldReturnCorrectCustomer()
-        {
-            //Arrange
-            var customerRepositoryFake = A.Fake<ICustomerRepository>();
-            var unitOfWorkFake = A.Fake<IUnitOfWork>();
-            var orderId = 1;
-            var newOrder = new Order { Id = orderId, Customer = _testCustomer };
-
-            A.CallTo(() => customerRepositoryFake.GetCustomerFromOrder(orderId)).Returns(_testCustomer);
-            A.CallTo(() => unitOfWorkFake.Customers).Returns(customerRepositoryFake);
-
-            //Act
-            await unitOfWorkFake.Customers.GetCustomerFromOrder(orderId);
-
-            //Assert
-            A.CallTo(() => customerRepositoryFake.GetCustomerFromOrder(orderId)).MustHaveHappenedOnceExactly();
-            Assert.NotNull(_testCustomer);
-            Assert.Equal(_testCustomer.Id, newOrder.Customer.Id);
-        }
     }
 }

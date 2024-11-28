@@ -4,6 +4,10 @@ Initiera Docker-compose:
 
 `docker-compose up --build`
 
+Starta webshop.api-1 och gå till
+
+`http://localhost:5000/swagger/index.html`
+
 ## Implementerade designmönster:
 - Observer pattern
 - Factory pattern

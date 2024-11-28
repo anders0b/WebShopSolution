@@ -11,7 +11,6 @@ public interface ICustomerRepository : IRepository<Customer>
     Task<Customer> GetCustomerByPhone(string phone);
     Task UpdateCustomerEmail(int customerId, string email);
     Task UpdateCustomerPhone(int customerId, string phone);
-    Task<Customer> GetCustomerFromOrder(int orderId);
 }
 
 public class CustomerRepository : Repository<Customer>, ICustomerRepository
@@ -42,11 +41,5 @@ public class CustomerRepository : Repository<Customer>, ICustomerRepository
     {
         var sql = $"UPDATE {_tableName} SET Phone = @Phone WHERE Id = @CustomerId";
         await _connection.ExecuteAsync(sql, new { Phone = phone, CustomerId = customerId }, transaction: _transaction);
-    }
-    public async Task<Customer> GetCustomerFromOrder(int orderId)
-    {
-        var tableName = "Orders";
-        var sql = $"SELECT * FROM {tableName} o JOIN Customers c ON o.CustomerId = c.Id WHERE o.Id = @OrderId";
-        return await _connection.QueryFirstOrDefaultAsync<Customer>(sql, new { OrderId = orderId }, transaction: _transaction) ?? default!;
     }
 }
