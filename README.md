@@ -1,9 +1,14 @@
 ## Labb 1 - WebShop | Anders Öberg
 
 Initiera Docker-compose:
+
 `docker-compose up --build`
 
-## Tools
+## Implementerade designmönster:
+- Observer pattern
+- Factory pattern
+
+## Verktyg
 | Package     | Use                                  |
 | ----------- | ------------------------------------ |
 | SQL Server  | Database                             |
