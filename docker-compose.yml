@@ -1,0 +1,43 @@
+﻿services:
+    webshop.api:
+        image: ${DOCKER_REGISTRY-}webshopapi
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+        - "5000:80"
+        depends_on:
+        - webshop.db
+        environment:
+        - ASPNETCORE_ENVIRONMENT=Development
+        - ConnectionStrings__DefaultConnection=Server=webshop.db;Database=WebShop;User=sa;Password=Password123;TrustServerCertificate=True
+        networks:
+        - webshop
+    webshop.db:
+        image: "mcr.microsoft.com/mssql/server:2019-latest"
+        ports:
+        - "1433:1433"
+        environment:
+            SA_PASSWORD: "Password123"
+            ACCEPT_EULA: "Y"
+        networks:
+        - webshop
+    dbup:
+        image: mcr.microsoft.com/dotnet/core/sdk:8.0
+        container_name: dbup-migrations
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: ["dotnet", "WebShop.API.dll", "migrate"]
+        environment:
+        - ASPNETCORE_ENVIRONMENT=Development
+        - ConnectionStrings__DefaultConnection=Server=webshop.db;Database=WebShop;User=sa;Password=Password123;TrustServerCertificate=True
+        depends_on:
+        - webshop.db
+        networks:
+        - webshop
+networks:
+    webshop:
+        driver: bridge
+    
+        
