@@ -10,7 +10,9 @@ namespace WebShop.Repository.Repository;
 public interface IOrderRepository : IRepository<Order>
 {
     Task AddProductsToOrder(int orderId, List<OrderItem> products);
+    Task DeleteAllProductsFromOrder(int orderId);
     Task AddCustomerToOrder(int orderId, int customerId);
+    Task RemoveCustomerFromOrder(int orderId);
     Task UpdateOrderStatus(int orderId, bool isShipped);
 }
 public class OrderRepository : Repository<Order>, IOrderRepository
@@ -36,28 +38,6 @@ public class OrderRepository : Repository<Order>, IOrderRepository
 
         return orderId;
     }
-    public override async Task<Order> GetById(int id)
-    {
-        var sql = @"
-            SELECT o.*, c.* 
-            FROM Orders o
-            JOIN Customers c ON o.CustomerId = c.Id
-            WHERE o.Id = @Id";
-
-        var order = await _connectionString.QueryAsync<Order, Customer, Order>(
-        sql,
-        (order, customer) =>
-        {
-            order.Customer = customer;  // Assign the customer to the order
-            return order;
-        },
-        new { Id = id },
-        transaction: _transaction,
-        splitOn: "Id" // This tells Dapper how to split the result set between `Order` and `Customer`   
-        );
-
-        return order.FirstOrDefault() ?? default!;
-    }
     public override async Task Update(Order entity)
     {
         var orderParams = new
@@ -76,6 +56,12 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         var sql = "UPDATE Orders SET CustomerId = @CustomerId WHERE Id = @OrderId";
 
         await _connectionString.ExecuteAsync(sql, new { OrderId = orderId, CustomerId = customerId }, _transaction);
+    }
+    public async Task RemoveCustomerFromOrder(int orderId)
+    {
+        var sql = "UPDATE Orders SET CustomerId = NULL WHERE Id = @OrderId";
+
+        await _connectionString.ExecuteAsync(sql, new { OrderId = orderId }, _transaction);
     }
 
     public async Task AddProductsToOrder(int orderId, List<OrderItem> orderItems)
@@ -113,7 +99,15 @@ public class OrderRepository : Repository<Order>, IOrderRepository
         }
 
     }
-    public async Task UpdateOrderStatus(int orderId, bool isShipped)
+
+    public async Task DeleteAllProductsFromOrder(int orderId)
+    {
+        var tableName = "OrderItems";
+        var sql = $"DELETE FROM {tableName} WHERE OrderId = @OrderId";
+        await _connectionString.ExecuteAsync(sql, new { OrderId = orderId }, transaction: _transaction);
+    }
+
+        public async Task UpdateOrderStatus(int orderId, bool isShipped)
     {
         var tableName = "Orders";
 

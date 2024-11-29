@@ -60,14 +60,15 @@ public class ProductExtensionTests
         //Arrange
         var fakeProductService = A.Fake<IProductServices>();
 
-        Product updatedProduct = new Product { Id = 0, Description = "Test", Name = "Testprodukt", Price = 60.99, Stock = 50 };
+        var newProduct = new Product();
+        A.CallTo(() => fakeProductService.GetProductById(newProduct.Id)).Returns(new Product());
 
         //Act
-        var result = await ProductEndpointExtensions.UpdateProduct(fakeProductService, updatedProduct);
+        var result = await ProductEndpointExtensions.UpdateProduct(fakeProductService, newProduct);
 
         //Assert
         var resultValue = Assert.IsType<BadRequest<string>>(result);
-        A.CallTo(() => fakeProductService.UpdateProduct(updatedProduct)).MustNotHaveHappened();
+        A.CallTo(() => fakeProductService.UpdateProduct(newProduct)).MustNotHaveHappened();
     }
     [Fact]
     public async Task DeleteProduct_ReturnsOkResult_WhenDeleteProductIdIsValid()

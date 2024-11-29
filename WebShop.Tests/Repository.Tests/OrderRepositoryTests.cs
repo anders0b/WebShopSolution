@@ -77,4 +77,38 @@ public class OrderRepositoryTests
         A.CallTo(() => repositoryFake.AddProductsToOrder(orderId, orderItems)).MustHaveHappenedOnceExactly();
 
     }
+    [Fact]
+    public async Task OrderRepository_RemoveCustomerFromOrder_ShouldRemoveAssociatedCustomerWithOrder()
+    {
+        //Arrange
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
+        var orderId = 1;
+
+        A.CallTo(() => unitOfWorkFake.Orders).Returns(repositoryFake);
+
+        //Act
+        await unitOfWorkFake.Orders.RemoveCustomerFromOrder(orderId);
+
+        //Assert
+        A.CallTo(() => repositoryFake.RemoveCustomerFromOrder(orderId)).MustHaveHappenedOnceExactly();
+
+    }
+    [Fact]
+    public async Task OrderRepository_RemoveProductsFromOrder_ShouldRemoveAssociatedProductsWithOrder()
+    {
+        //Arrange
+        var repositoryFake = A.Fake<IOrderRepository>();
+        var unitOfWorkFake = A.Fake<IUnitOfWork>();
+        var orderId = 1;
+
+        A.CallTo(() => unitOfWorkFake.Orders).Returns(repositoryFake);
+
+        //Act
+        await unitOfWorkFake.Orders.DeleteAllProductsFromOrder(orderId);
+
+        //Assert
+        A.CallTo(() => repositoryFake.DeleteAllProductsFromOrder(orderId)).MustHaveHappenedOnceExactly();
+
+    }
 }
