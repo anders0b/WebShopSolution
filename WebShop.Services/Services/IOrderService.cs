@@ -12,11 +12,13 @@ public interface IOrderService
     Task CreateOrder(Order order);
     Task<IEnumerable<Order>> GetAllOrders();
     Task AddProductsToOrder(int orderId, List<AddProductsToOrderRequest> products);
+    Task RemoveProductsFromOrder(int orderId);
     Task<Order> GetOrderById(int id);
     Task RemoveOrder(int id);
     Task UpdateOrder(Order order);
     Task UpdateOrderStatus(int id, bool isShipped);
     Task AddCustomerToOrder(int orderId, int customerId);
+    Task RemoveCustomerFromOrder(int orderId);
 }
 public class OrderService : IOrderService
 {
@@ -42,6 +44,11 @@ public class OrderService : IOrderService
             throw new Exception("Order or Customer does not exist");
         }
     }
+    public async Task RemoveCustomerFromOrder(int orderId)
+    {
+        await _unitOfWork.Orders.RemoveCustomerFromOrder(orderId);
+        await _unitOfWork.SaveChangesAsync();
+    }
 
     public async Task AddProductsToOrder(int orderId, List<AddProductsToOrderRequest> products)
     {
@@ -62,6 +69,11 @@ public class OrderService : IOrderService
                 await _unitOfWork.SaveChangesAsync();
             }
         }
+    }
+    public async Task RemoveProductsFromOrder(int orderId)
+    {
+        await _unitOfWork.Orders.DeleteAllProductsFromOrder(orderId);
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task CreateOrder(Order order)

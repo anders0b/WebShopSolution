@@ -218,5 +218,65 @@ namespace WebShop.Tests.Api.Tests
             var resultValue = Assert.IsType<BadRequest<string>>(result);
             A.CallTo(() => fakeOrderService.AddCustomerToOrder(orderId, customerId)).MustNotHaveHappened();
         }
+        [Fact]
+        public async Task RemoveCustomerFromOrder_ShouldReturnOk_IfIdValid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int orderId = 1;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order());
+
+            //Act
+            var result = await OrderEndpointExtensions.RemoveCustomerFromOrder(fakeOrderService, orderId);
+
+            //Assert
+            var resultValue = Assert.IsType<Ok<string>>(result);
+            A.CallTo(() => fakeOrderService.RemoveCustomerFromOrder(orderId)).MustHaveHappenedOnceExactly();
+        }
+        [Fact]
+        public async Task RemoveCustomerFromOrder_ShouldReturnBadRequest_IfIdInvalid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int orderId = 0;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order());
+
+            //Act
+            var result = await OrderEndpointExtensions.RemoveCustomerFromOrder(fakeOrderService, orderId);
+
+            //Assert
+            var resultValue = Assert.IsType<BadRequest<string>>(result);
+            A.CallTo(() => fakeOrderService.RemoveCustomerFromOrder(orderId)).MustNotHaveHappened();
+        }
+        [Fact]
+        public async Task RemoveProductsFromOrder_ShouldReturnBadRequest_IfIdInvalid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int orderId = 0;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order());
+
+            //Act
+            var result = await OrderEndpointExtensions.RemoveProductsFromOrder(fakeOrderService, orderId);
+
+            //Assert
+            var resultValue = Assert.IsType<BadRequest<string>>(result);
+            A.CallTo(() => fakeOrderService.RemoveProductsFromOrder(orderId)).MustNotHaveHappened();
+        }
+        [Fact]
+        public async Task RemoveProductsFromOrder_ShouldReturnOk_IfIdValid()
+        {
+            //Arrange
+            var fakeOrderService = A.Fake<IOrderService>();
+            int orderId = 1;
+            A.CallTo(() => fakeOrderService.GetOrderById(orderId)).Returns(new Order { Id = 1});
+
+            //Act
+            var result = await OrderEndpointExtensions.RemoveProductsFromOrder(fakeOrderService, orderId);
+
+            //Assert
+            var resultValue = Assert.IsType<Ok<string>>(result);
+            A.CallTo(() => fakeOrderService.RemoveProductsFromOrder(orderId)).MustHaveHappenedOnceExactly();
+        }
     }
 }
